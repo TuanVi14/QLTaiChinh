@@ -1,6 +1,8 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
+﻿using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using QLTaiChinh.Data;
 using QLTaiChinh.Models;
 
@@ -168,7 +170,8 @@ namespace QLTaiChinh.Controllers
                 .Distinct()
                 .OrderByDescending(y => y)
                 .ToList();
-
+            NguoiDung? nguoiDung = await _db.NguoiDungs.FirstOrDefaultAsync(u => u.NguoiDungId == userId);
+            ViewData["NguoiDung"] = nguoiDung;
             return View(vm);
         }
     }

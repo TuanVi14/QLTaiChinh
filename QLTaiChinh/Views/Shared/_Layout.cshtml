@@ -18,6 +18,7 @@
 
         {
             margin-left: 0 !important;
+            width: 100% !important;
         }
 
         }
@@ -62,7 +63,7 @@
         @await Html.PartialAsync("_SidebarPartial")
 
         <div class="container-fluid page-body-wrapper">
-            @await Html.PartialAsync("_NavbarPartial")
+            @await Html.PartialAsync("_NavbarPartial", (QLTaiChinh.Data.NguoiDung?)null)
 
             <div class="main-panel">
                 <div class="content-wrapper">
