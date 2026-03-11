@@ -21297,7 +21297,6 @@ div.tagsinput {
 
 /* Layouts */
 .navbar.fixed-top + .page-body-wrapper {
-    margin-left: 244px;
     padding-top: 70px;
 }
 

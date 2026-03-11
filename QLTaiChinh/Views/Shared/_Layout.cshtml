@@ -11,10 +11,51 @@
 
     
 
-    /* Mobile: bỏ margin khi sidebar ẩn */
-    @@media (max-width: 991px) {
-    .page-body-wrapper { margin-left: 0; }
-    }
+    <style>
+        /* Mobile: bỏ margin khi sidebar ẩn */
+        @@media (max-width: 991px) {
+            .page-body-wrapper
+
+        {
+            margin-left: 0 !important;
+        }
+
+        }
+
+        /* Fix card bị sidebar che: đảm bảo content-wrapper không bị tràn */
+        .main-panel {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            padding: 1.5rem;
+            overflow-x: hidden;
+        }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            width: 100%;
+        }
+        @@media (max-width: 1200px) {
+            .kpi-row
+
+        {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        }
+        @@media (max-width: 576px) {
+            .kpi-row
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        }
+    </style>
 </head>
 <body>
     <div class="container-scroller">
