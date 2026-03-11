@@ -76,9 +76,15 @@ namespace QLTaiChinh.Controllers
             int? userId = GetUserId();
             if (userId == null) return RedirectToAction("Login", "Login");
 
+            model.NguoiDungId = userId.Value;
+
+            // Xóa các navigation property khỏi ModelState
+            ModelState.Remove("NguoiDung");
+            ModelState.Remove("DanhMuc");
+            ModelState.Remove("TaiKhoan");
+
             if (ModelState.IsValid)
-            {
-                model.NguoiDungId = userId.Value;
+            {  
                 model.NgayTao = DateTime.Now;
                 model.NgayCapNhat = DateTime.Now;
                 _db.GiaoDiches.Add(model);
@@ -111,6 +117,11 @@ namespace QLTaiChinh.Controllers
         {
             int? userId = GetUserId();
             if (userId == null) return RedirectToAction("Login", "Login");
+
+            // Xóa các navigation property khỏi ModelState
+            ModelState.Remove("NguoiDung");
+            ModelState.Remove("DanhMuc");
+            ModelState.Remove("TaiKhoan");
 
             if (ModelState.IsValid)
             {

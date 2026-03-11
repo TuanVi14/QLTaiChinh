@@ -63,6 +63,10 @@ namespace QLTaiChinh.Controllers
             int? userId = GetUserId();
             if (userId == null) return RedirectToAction("Login", "Login");
 
+            // Xóa các navigation property khỏi ModelState
+            ModelState.Remove("NguoiDung");
+            ModelState.Remove("DanhMuc");
+
             // Kiểm tra trùng
             bool exists = await _db.NganSaches.AnyAsync(n =>
                 n.NguoiDungId == userId &&
@@ -108,6 +112,10 @@ namespace QLTaiChinh.Controllers
         {
             int? userId = GetUserId();
             if (userId == null) return RedirectToAction("Login", "Login");
+
+            // Xóa các navigation property khỏi ModelState
+            ModelState.Remove("NguoiDung");
+            ModelState.Remove("DanhMuc");
 
             if (ModelState.IsValid)
             {
