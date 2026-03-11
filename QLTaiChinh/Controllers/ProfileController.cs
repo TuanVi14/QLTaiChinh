@@ -5,10 +5,10 @@ using QLTaiChinh.Helper;
 
 namespace QLTaiChinh.Controllers
 {
-    public class ProfileController : Controller
+    public class ProfileController : BaseController
     {
         private readonly QuanLyTaiChinhCaNhanContext _db;
-        public ProfileController(QuanLyTaiChinhCaNhanContext context) => _db = context;
+        public ProfileController(QuanLyTaiChinhCaNhanContext context):base(context) => _db = context;
 
         private int? UserId() => HttpContext.Session.GetInt32("UserID");
 

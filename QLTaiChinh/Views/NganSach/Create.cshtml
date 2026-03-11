@@ -1,0 +1,193 @@
+﻿@* Views/NganSach/Create.cshtml *@
+@model QLTaiChinh.Data.NganSach
+@{
+    ViewData["Title"] = "Thêm ngân sách";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isEdit = Model?.NganSachId > 0;
+    string formAction = isEdit ? $"/NganSach/Edit/{Model!.NganSachId}" : "/NganSach/Create";
+}
+
+<style>
+    .form-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 28px;
+        max-width: 520px;
+    }
+
+    .form-label {
+        font-size: .8rem;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        background: #21262d !important;
+        border: 1px solid #30363d !important;
+        color: #e6edf3 !important;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: .9rem;
+        width: 100%;
+        outline: none;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0090e7 !important;
+            box-shadow: none !important;
+        }
+
+    .row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .btn-submit {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 11px 28px;
+        font-size: .9rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        background: #21262d;
+        color: #8b949e;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 11px 20px;
+        font-size: .9rem;
+        text-decoration: none;
+        margin-left: 8px;
+    }
+
+    .alert-error {
+        background: rgba(247,129,102,.1);
+        border: 1px solid rgba(247,129,102,.3);
+        color: #f78166;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+        font-size: .85rem;
+    }
+
+    .hint {
+        font-size: .75rem;
+        color: #8b949e;
+        margin-top: 4px;
+    }
+</style>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <h4 style="margin:0;font-weight:700;color:#fff">
+        @(isEdit ? "✏️ Sửa ngân sách" : "➕ Thêm ngân sách mới")
+    </h4>
+    <a href="/NganSach/NganSach" style="color:#8b949e;text-decoration:none;font-size:.88rem">← Quay lại</a>
+</div>
+
+<div class="form-card">
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+    {
+        <div class="alert-error">
+            @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div>⚠️ @err.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    <form method="post" action="@formAction">
+        @Html.AntiForgeryToken()
+
+        @* Danh mục *@
+        <div class="form-group">
+            <label class="form-label">Danh mục chi tiêu <span style="color:#f78166">*</span></label>
+            <select name="DanhMucId" class="form-select" required @(isEdit ? "disabled" : "")>
+                <option value="">-- Chọn danh mục --</option>
+                @foreach (SelectListItem item in (ViewBag.DanhMucList as SelectList ?? new SelectList(new List<object>())))
+                {
+                    if (item.Selected)
+                    {
+                        <option value="@item.Value" selected>@item.Text</option>
+                    }
+                    else
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                }
+            </select>
+            @if (isEdit)
+            {
+                <input type="hidden" name="DanhMucId" value="@Model!.DanhMucId" />
+                <p class="hint">Không thể thay đổi danh mục khi sửa ngân sách.</p>
+            }
+        </div>
+
+        @* Giới hạn *@
+        <div class="form-group">
+            <label class="form-label">Số tiền giới hạn (₫) <span style="color:#f78166">*</span></label>
+            <input type="number" name="SoTienGioiHan" class="form-control"
+                   value="@Model?.SoTienGioiHan" min="1000" step="10000"
+                   placeholder="Ví dụ: 2000000" required />
+        </div>
+
+        @* Tháng / Năm *@
+        <div class="row-2">
+            <div class="form-group">
+                <label class="form-label">Tháng <span style="color:#f78166">*</span></label>
+                <select name="Thang" class="form-select" required @(isEdit ? "disabled" : "")>
+                    @{
+                        int defThang = isEdit ? Model!.Thang : (ViewBag.DefaultThang ?? DateTime.Now.Month);
+                    }
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        if (m == defThang)
+                        {
+                            <option value="@m" selected>Tháng @m</option>
+                        }
+                        else
+                        {
+                            <option value="@m">Tháng @m</option>
+                        }
+                    }
+                </select>
+                @if (isEdit)
+                {
+                    <input type="hidden" name="Thang" value="@Model!.Thang" />
+                }
+            </div>
+            <div class="form-group">
+                <label class="form-label">Năm <span style="color:#f78166">*</span></label>
+                <input type="number" name="Nam" class="form-control"
+                       value="@(isEdit? Model!.Nam : (ViewBag.DefaultNam ?? DateTime.Now.Year))"
+                       min="2000" max="2100" required @(isEdit ? "readonly" : "") />
+                @if (isEdit)
+                {
+                    <input type="hidden" name="Nam" value="@Model!.Nam" />
+                }
+            </div>
+        </div>
+
+        <div style="margin-top:24px">
+            <button type="submit" class="btn-submit">
+                <i class="mdi mdi-content-save"></i>
+                @(isEdit ? "Lưu thay đổi" : "Thêm ngân sách")
+            </button>
+            <a href="/NganSach/NganSach" class="btn-cancel">Huỷ</a>
+        </div>
+    </form>
+</div>
+
+

@@ -30,7 +30,11 @@
 
   <ItemGroup>
     <Folder Include="Data\" />
-    <Folder Include="Avatar\" />
+    <Folder Include="wwwroot\Avatar\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Avatar\avatar.jpg" />
   </ItemGroup>
 
 </Project>

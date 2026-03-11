@@ -8,11 +8,11 @@ using QLTaiChinh.Models;
 
 namespace QLTaiChinh.Controllers
 {
-    public class TongQuanController : Controller
+    public class TongQuanController : BaseController
     {
         private readonly QuanLyTaiChinhCaNhanContext _db;
 
-        public TongQuanController(QuanLyTaiChinhCaNhanContext context)
+        public TongQuanController(QuanLyTaiChinhCaNhanContext context):base(context)
         {
             _db = context;
         }
@@ -170,8 +170,6 @@ namespace QLTaiChinh.Controllers
                 .Distinct()
                 .OrderByDescending(y => y)
                 .ToList();
-            NguoiDung? nguoiDung = await _db.NguoiDungs.FirstOrDefaultAsync(u => u.NguoiDungId == userId);
-            ViewData["NguoiDung"] = nguoiDung;
             return View(vm);
         }
     }

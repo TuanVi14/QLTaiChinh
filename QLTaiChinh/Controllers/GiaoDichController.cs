@@ -5,11 +5,11 @@ using QLTaiChinh.Data;
 
 namespace QLTaiChinh.Controllers
 {
-    public class GiaoDichController : Controller
+    public class GiaoDichController : BaseController
     {
         private readonly QuanLyTaiChinhCaNhanContext _db;
 
-        public GiaoDichController(QuanLyTaiChinhCaNhanContext context)
+        public GiaoDichController(QuanLyTaiChinhCaNhanContext context):base(context) 
         {
             _db = context;
         }

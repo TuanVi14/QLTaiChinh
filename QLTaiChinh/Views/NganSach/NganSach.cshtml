@@ -1,0 +1,371 @@
+﻿@* Views/NganSach/NganSach.cshtml *@
+@model IEnumerable<QLTaiChinh.Data.NganSach>
+@{
+    ViewData["Title"] = "Thiết lập Ngân sách";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string FormatVnd(decimal v) => v.ToString("N0") + " ₫";
+    string PctColor(decimal p) => p >= 100 ? "#ff4444" : p >= 80 ? "#f78166" : "#3fb950";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .btn-add {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: .88rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-add:hover {
+            background: #007acc;
+            color: #fff;
+        }
+
+    /* KPI */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 18px 20px;
+    }
+
+        .kpi::before {
+            display: none;
+        }
+
+    .kpi-label {
+        font-size: .72rem;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        margin-bottom: 6px;
+    }
+
+    .kpi-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        font-family: 'Courier New',monospace;
+        color: #e6edf3;
+    }
+
+    /* Filter */
+    .filter-bar {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+        .filter-bar select {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: .85rem;
+            outline: none;
+        }
+
+    .btn-filter {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: .85rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Cards ngân sách */
+    .ns-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .ns-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 20px;
+        transition: .2s;
+    }
+
+        .ns-card:hover {
+            border-color: #58a6ff;
+        }
+
+    .ns-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+    }
+
+    .ns-name {
+        font-weight: 600;
+        font-size: .95rem;
+    }
+
+    .ns-status {
+        font-size: .72rem;
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 3px 10px;
+    }
+
+        .ns-status.ok {
+            background: rgba(63,185,80,.15);
+            color: #3fb950;
+        }
+
+        .ns-status.warn {
+            background: rgba(247,129,102,.15);
+            color: #f78166;
+        }
+
+        .ns-status.over {
+            background: rgba(255,68,68,.15);
+            color: #ff4444;
+        }
+
+    .ns-bar-bg {
+        height: 10px;
+        background: #21262d;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+
+    .ns-bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width .5s ease;
+    }
+
+    .ns-amounts {
+        display: flex;
+        justify-content: space-between;
+        font-size: .78rem;
+        color: #8b949e;
+        margin-bottom: 14px;
+    }
+
+        .ns-amounts strong {
+            color: #e6edf3;
+        }
+
+    .ns-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-edit-sm {
+        background: rgba(88,166,255,.15);
+        color: #58a6ff;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: .78rem;
+        text-decoration: none;
+        flex: 1;
+        text-align: center;
+    }
+
+        .btn-edit-sm:hover {
+            background: rgba(88,166,255,.3);
+            color: #58a6ff;
+        }
+
+    .btn-del-sm {
+        background: rgba(247,129,102,.15);
+        color: #f78166;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: .78rem;
+        cursor: pointer;
+        flex: 1;
+    }
+
+        .btn-del-sm:hover {
+            background: rgba(247,129,102,.3);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #8b949e;
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+    }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+    .alert-success {
+        background: rgba(63,185,80,.15);
+        border: 1px solid rgba(63,185,80,.3);
+        color: #3fb950;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+    }
+
+    .pct-text {
+        font-size: .85rem;
+        font-weight: 700;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h4 style="margin:0;font-weight:700;color:#fff">📊 Thiết lập Ngân sách</h4>
+        <small style="color:#8b949e">Tháng @ViewBag.Thang / @ViewBag.Nam</small>
+    </div>
+    <a href="/NganSach/Create?thang=@ViewBag.Thang&nam=@ViewBag.Nam" class="btn-add">
+        <i class="mdi mdi-plus"></i> Thêm ngân sách
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-success"><i class="mdi mdi-check-circle"></i> @TempData["Success"]</div>
+}
+
+@* KPI *@
+<div class="kpi-row">
+    <div class="kpi">
+        <div class="kpi-label">Tổng giới hạn</div>
+        <div class="kpi-value" style="color:#58a6ff">@FormatVnd((decimal)ViewBag.TongGioiHan)</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Đã chi tiêu</div>
+        <div class="kpi-value" style="color:#f78166">@FormatVnd((decimal)ViewBag.TongDaChiTieu)</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Còn lại</div>
+        @{
+            decimal conLai = (decimal)ViewBag.TongGioiHan - (decimal)ViewBag.TongDaChiTieu;
+            string conLaiColor = conLai >= 0 ? "#3fb950" : "#ff4444";
+        }
+        <div class="kpi-value" style="color:@conLaiColor">@FormatVnd(conLai)</div>
+    </div>
+</div>
+
+@* Filter *@
+<form method="get" action="/NganSach/NganSach">
+    <div class="filter-bar">
+        <select name="thang">
+            @for (int m = 1; m <= 12; m++)
+            {
+                if (m == (int)ViewBag.Thang)
+                {
+                    <option value="@m" selected>Tháng @m</option>
+                }
+                else
+                {
+                    <option value="@m">Tháng @m</option>
+                }
+            }
+        </select>
+        <select name="nam">
+            @foreach (int y in (ViewBag.NamList as List<int> ?? new List<int>()))
+            {
+                if (y == (int)ViewBag.Nam)
+                {
+                    <option value="@y" selected>@y</option>
+                }
+                else
+                {
+                    <option value="@y">@y</option>
+                }
+            }
+        </select>
+        <button type="submit" class="btn-filter">Xem</button>
+    </div>
+</form>
+
+@* Danh sách ngân sách dạng card *@
+@if (Model.Any())
+{
+    <div class="ns-grid">
+        @foreach (var ns in Model)
+        {
+            decimal pct = ns.SoTienGioiHan > 0 ? Math.Round(ns.SoTienDaChiTieu * 100 / ns.SoTienGioiHan, 1) : 0;
+            decimal barW = Math.Min(pct, 100);
+            string color = PctColor(pct);
+            string statusCls = pct >= 100 ? "over" : pct >= 80 ? "warn" : "ok";
+            string statusTxt = pct >= 100 ? "🔴 Vượt ngân sách" : pct >= 80 ? "⚠️ Sắp vượt" : "✓ Bình thường";
+
+            <div class="ns-card">
+                <div class="ns-card-header">
+                    <span class="ns-name">@ns.DanhMuc?.TenDanhMuc</span>
+                    <span class="ns-status @statusCls">@statusTxt</span>
+                </div>
+                <div class="ns-bar-bg">
+                    <div class="ns-bar-fill" style="width:@barW%;background:@color"></div>
+                </div>
+                <div class="ns-amounts">
+                    <span>Đã dùng: <strong style="color:@color">@FormatVnd(ns.SoTienDaChiTieu)</strong></span>
+                    <span class="pct-text" style="color:@color">@pct%</span>
+                    <span>Giới hạn: <strong>@FormatVnd(ns.SoTienGioiHan)</strong></span>
+                </div>
+                <div class="ns-actions">
+                    <a href="/NganSach/Edit/@ns.NganSachId" class="btn-edit-sm">
+                        <i class="mdi mdi-pencil"></i> Sửa
+                    </a>
+                    <form method="post" action="/NganSach/Delete/@ns.NganSachId" style="flex:1"
+                          onsubmit="return confirm('Xác nhận xoá ngân sách này?')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-del-sm" style="width:100%">
+                            <i class="mdi mdi-delete"></i> Xoá
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <i class="mdi mdi-chart-bar"></i>
+        <p>Chưa có ngân sách nào trong tháng @ViewBag.Thang/@ViewBag.Nam</p>
+        <a href="/NganSach/Create?thang=@ViewBag.Thang&nam=@ViewBag.Nam" class="btn-add" style="display:inline-flex;margin-top:12px">
+            <i class="mdi mdi-plus"></i> Thiết lập ngân sách đầu tiên
+        </a>
+    </div>
+}
+
+

@@ -4,10 +4,10 @@ using QLTaiChinh.Data;
 
 namespace QLTaiChinh.Controllers
 {
-    public class TaiKhoanController : Controller
+    public class TaiKhoanController : BaseController
     {
         private readonly QuanLyTaiChinhCaNhanContext _db;
-        public TaiKhoanController(QuanLyTaiChinhCaNhanContext context) => _db = context;
+        public TaiKhoanController(QuanLyTaiChinhCaNhanContext context):base(context) => _db = context;
 
         private int? UserId() => HttpContext.Session.GetInt32("UserID");
         public async Task<IActionResult> TaiKhoan()

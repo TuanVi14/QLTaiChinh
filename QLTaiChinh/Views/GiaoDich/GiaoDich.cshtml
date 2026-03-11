@@ -1,0 +1,434 @@
+﻿@* Views/GiaoDich/GiaoDich.cshtml *@
+@model IEnumerable<QLTaiChinh.Data.GiaoDich>
+@{
+    ViewData["Title"] = "Quản lý Thu - Chi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string FormatVnd(decimal v) => v.ToString("N0") + " ₫";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+        .page-header h4 {
+            margin: 0;
+            font-weight: 700;
+            color: #fff;
+        }
+
+    .btn-add {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: .88rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-add:hover {
+            background: #007acc;
+            color: #fff;
+        }
+
+    /* KPI */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 18px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .kpi::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .kpi.thu::before {
+            background: #3fb950
+        }
+
+        .kpi.chi::before {
+            background: #f78166
+        }
+
+        .kpi.net::before {
+            background: #58a6ff
+        }
+
+    .kpi-label {
+        font-size: .72rem;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        margin-bottom: 6px;
+    }
+
+    .kpi-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        font-family: 'Courier New',monospace;
+    }
+
+    .kpi.thu .kpi-value {
+        color: #3fb950
+    }
+
+    .kpi.chi .kpi-value {
+        color: #f78166
+    }
+
+    .kpi.net .kpi-value {
+        color: #58a6ff
+    }
+
+    /* Filter */
+    .filter-bar {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+
+        .filter-bar select, .filter-bar input[type=text] {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: .85rem;
+            outline: none;
+        }
+
+            .filter-bar select:focus, .filter-bar input:focus {
+                border-color: #0090e7;
+            }
+
+    .btn-filter {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: .85rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-reset {
+        background: #21262d;
+        color: #8b949e;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: .85rem;
+        text-decoration: none;
+    }
+
+    /* Table */
+    .table-wrap {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table {
+        margin: 0;
+        color: #e6edf3;
+    }
+
+        .table thead th {
+            background: #21262d;
+            color: #8b949e;
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            border-color: #30363d;
+            padding: 12px 16px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            border-color: #30363d;
+            padding: 12px 16px;
+            vertical-align: middle;
+            font-size: .88rem;
+        }
+
+        .table tbody tr:hover td {
+            background: rgba(255,255,255,.03);
+        }
+
+    .badge-thu {
+        background: rgba(63,185,80,.15);
+        color: #3fb950;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: .75rem;
+        font-weight: 600;
+    }
+
+    .badge-chi {
+        background: rgba(247,129,102,.15);
+        color: #f78166;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: .75rem;
+        font-weight: 600;
+    }
+
+    .amount-thu {
+        color: #3fb950;
+        font-weight: 700;
+        font-family: 'Courier New',monospace;
+    }
+
+    .amount-chi {
+        color: #f78166;
+        font-weight: 700;
+        font-family: 'Courier New',monospace;
+    }
+
+    .btn-edit {
+        background: rgba(88,166,255,.15);
+        color: #58a6ff;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: .78rem;
+        text-decoration: none;
+        margin-right: 4px;
+    }
+
+        .btn-edit:hover {
+            background: rgba(88,166,255,.3);
+            color: #58a6ff;
+        }
+
+    .btn-del {
+        background: rgba(247,129,102,.15);
+        color: #f78166;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: .78rem;
+        cursor: pointer;
+    }
+
+        .btn-del:hover {
+            background: rgba(247,129,102,.3);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #8b949e;
+    }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+    /* Alert */
+    .alert-success {
+        background: rgba(63,185,80,.15);
+        border: 1px solid rgba(63,185,80,.3);
+        color: #3fb950;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h4>💳 Quản lý Thu - Chi</h4>
+        <small style="color:#8b949e">Tháng @ViewBag.Thang / @ViewBag.Nam</small>
+    </div>
+    <a href="/GiaoDich/Create" class="btn-add">
+        <i class="mdi mdi-plus"></i> Thêm giao dịch
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-success"><i class="mdi mdi-check-circle"></i> @TempData["Success"]</div>
+}
+
+@* KPI *@
+<div class="kpi-row">
+    <div class="kpi thu">
+        <div class="kpi-label">Tổng Thu</div>
+        <div class="kpi-value">@FormatVnd((decimal)ViewBag.TongThu)</div>
+    </div>
+    <div class="kpi chi">
+        <div class="kpi-label">Tổng Chi</div>
+        <div class="kpi-value">@FormatVnd((decimal)ViewBag.TongChi)</div>
+    </div>
+    <div class="kpi net">
+        <div class="kpi-label">Thặng Dư</div>
+        <div class="kpi-value">@FormatVnd((decimal)ViewBag.TongThu - (decimal)ViewBag.TongChi)</div>
+    </div>
+</div>
+
+@* Filter *@
+<form method="get" action="/GiaoDich/GiaoDich">
+    <div class="filter-bar">
+        <select name="thang">
+            @for (int m = 1; m <= 12; m++)
+            {
+                if (m == (int)ViewBag.Thang)
+                {
+                    <option value="@m" selected>Tháng @m</option>
+                }
+                else
+                {
+                    <option value="@m">Tháng @m</option>
+                }
+            }
+        </select>
+        <select name="nam">
+            @foreach (int y in (ViewBag.NamList as List<int> ?? new List<int>()))
+            {
+                if (y == (int)ViewBag.Nam)
+                {
+                    <option value="@y" selected>@y</option>
+                }
+                else
+                {
+                    <option value="@y">@y</option>
+                }
+            }
+        </select>
+        <select name="loai">
+            <option value="">-- Tất cả --</option>
+            @if ((string?)ViewBag.Loai == "Thu")
+            {
+                <option value="Thu" selected>Thu</option>
+            }
+            else
+            {
+                <option value="Thu">Thu</option>
+            }
+            @if ((string?)ViewBag.Loai == "Chi")
+            {
+                <option value="Chi" selected>Chi</option>
+            }
+            else
+            {
+                <option value="Chi">Chi</option>
+            }
+        </select>
+        <input type="text" name="keyword" placeholder="🔍 Tìm kiếm..." value="@ViewBag.Keyword" style="min-width:180px" />
+        <button type="submit" class="btn-filter">Xem</button>
+        <a href="/GiaoDich/GiaoDich" class="btn-reset">Đặt lại</a>
+    </div>
+</form>
+
+@* Table *@
+<div class="table-wrap">
+    @if (Model.Any())
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ngày</th>
+                    <th>Loại</th>
+                    <th>Danh mục</th>
+                    <th>Mô tả</th>
+                    <th>Tài khoản</th>
+                    <th>Hình thức</th>
+                    <th style="text-align:right">Số tiền</th>
+                    <th style="text-align:center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var g in Model)
+                {
+                    <tr>
+                        <td style="color:#8b949e">@g.NgayGiaoDich.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (g.LoaiGiaoDich == "Thu")
+                            {
+                                <span class="badge-thu">↑ Thu</span>
+                            }
+                            else
+                            {
+
+                                <span class="badge-chi">↓ Chi</span>
+                            }
+                        </td>
+                        <td>@g.DanhMuc?.TenDanhMuc</td>
+                        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@g.MoTa</td>
+                        <td style="color:#8b949e">@g.TaiKhoan?.TenTaiKhoan</td>
+                        <td style="color:#8b949e">@g.HinhThucThanhToan</td>
+                        <td style="text-align:right">
+                            @if (g.LoaiGiaoDich == "Thu")
+                            {
+                                <span class="amount-thu">+@FormatVnd(g.SoTien)</span>
+                            }
+                            else
+                            {
+
+                                <span class="amount-chi">-@FormatVnd(g.SoTien)</span>
+                            }
+                        </td>
+                        <td style="text-align:center;white-space:nowrap">
+                            <a href="/GiaoDich/Edit/@g.GiaoDichId" class="btn-edit">
+                                <i class="mdi mdi-pencil"></i> Sửa
+                            </a>
+                            <form method="post" action="/GiaoDich/Delete/@g.GiaoDichId" style="display:inline"
+                                  onsubmit="return confirm('Xác nhận xoá giao dịch này?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-del">
+                                    <i class="mdi mdi-delete"></i> Xoá
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="mdi mdi-playlist-remove"></i>
+            <p>Không có giao dịch nào trong tháng @ViewBag.Thang/@ViewBag.Nam</p>
+            <a href="/GiaoDich/Create" class="btn-add" style="display:inline-flex;margin-top:10px">
+                <i class="mdi mdi-plus"></i> Thêm giao dịch đầu tiên
+            </a>
+        </div>
+    }
+</div>
+
+

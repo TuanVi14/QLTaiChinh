@@ -1,0 +1,223 @@
+﻿@* Views/GiaoDich/Edit.cshtml *@
+@model QLTaiChinh.Data.GiaoDich
+@{
+    ViewData["Title"] = "Sửa giao dịch";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isEdit = true;
+    string formAction = $"/GiaoDich/Edit/{Model.GiaoDichId}";
+}
+
+<style>
+    .form-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 28px;
+        max-width: 620px;
+    }
+
+    .form-label {
+        font-size: .8rem;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        background: #21262d !important;
+        border: 1px solid #30363d !important;
+        color: #e6edf3 !important;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: .9rem;
+        width: 100%;
+        outline: none;
+        transition: .15s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0090e7 !important;
+            box-shadow: none !important;
+        }
+
+    .row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .btn-submit {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 11px 28px;
+        font-size: .9rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-submit:hover {
+            background: #007acc;
+        }
+
+    .btn-cancel {
+        background: #21262d;
+        color: #8b949e;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 11px 20px;
+        font-size: .9rem;
+        text-decoration: none;
+        margin-left: 8px;
+    }
+
+    .loai-toggle {
+        display: flex;
+        gap: 8px;
+    }
+
+    .loai-btn {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 2px solid #30363d;
+        background: #21262d;
+        color: #8b949e;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        transition: .15s;
+    }
+
+        .loai-btn.active-thu {
+            border-color: #3fb950;
+            background: rgba(63,185,80,.15);
+            color: #3fb950;
+        }
+
+        .loai-btn.active-chi {
+            border-color: #f78166;
+            background: rgba(247,129,102,.15);
+            color: #f78166;
+        }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+</style>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <h4 style="margin:0;font-weight:700;color:#fff">✏️ Sửa giao dịch</h4>
+    <a href="/GiaoDich/GiaoDich" style="color:#8b949e;text-decoration:none;font-size:.88rem">← Quay lại</a>
+</div>
+
+<div class="form-card">
+    <form method="post" action="@formAction">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label class="form-label">Loại giao dịch</label>
+            <div class="loai-toggle">
+                <div class="loai-btn" id="btn-thu" onclick="setLoai('Thu')">↑ Thu nhập</div>
+                <div class="loai-btn" id="btn-chi" onclick="setLoai('Chi')">↓ Chi tiêu</div>
+            </div>
+            <input type="hidden" name="LoaiGiaoDich" id="loaiInput" value="@Model.LoaiGiaoDich" />
+        </div>
+
+        <div class="row-2">
+            <div class="form-group">
+                <label class="form-label">Số tiền (₫)</label>
+                <input type="number" name="SoTien" class="form-control" value="@Model.SoTien" min="1" step="1000" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Ngày giao dịch</label>
+                <input type="date" name="NgayGiaoDich" class="form-control"
+                       value="@Model.NgayGiaoDich.ToString("yyyy-MM-dd")" required />
+            </div>
+        </div>
+
+        <div class="row-2">
+            <div class="form-group">
+                <label class="form-label">Danh mục</label>
+                <select name="DanhMucId" class="form-select" required>
+                    @foreach (SelectListItem item in (ViewBag.DanhMucList as SelectList ?? new SelectList(new List<object>())))
+                    {
+                        if (item.Selected)
+                        {
+                            <option value="@item.Value" selected>@item.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tài khoản</label>
+                <select name="TaiKhoanId" class="form-select" required>
+                    @foreach (SelectListItem item in (ViewBag.TaiKhoanList as SelectList ?? new SelectList(new List<object>())))
+                    {
+                        if (item.Selected)
+                        {
+                            <option value="@item.Value" selected>@item.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Hình thức thanh toán</label>
+            <select name="HinhThucThanhToan" class="form-select">
+                <option value="">-- Chọn --</option>
+                @foreach (var ht in new[] { "Tiền mặt", "Chuyển khoản", "Thẻ tín dụng", "Thẻ ghi nợ", "Ví điện tử", "Khác" })
+                {
+                    if (Model.HinhThucThanhToan == ht)
+                    {
+                        <option value="@ht" selected>@ht</option>
+                    }
+                    else
+                    {
+                        <option value="@ht">@ht</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Mô tả</label>
+            <input type="text" name="MoTa" class="form-control" value="@Model.MoTa" maxlength="500" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Ghi chú</label>
+            <textarea name="GhiChu" class="form-control" rows="2">@Model.GhiChu</textarea>
+        </div>
+
+        <div style="margin-top:24px">
+            <button type="submit" class="btn-submit"><i class="mdi mdi-content-save"></i> Lưu thay đổi</button>
+            <a href="/GiaoDich/GiaoDich" class="btn-cancel">Huỷ</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function setLoai(loai) {
+            document.getElementById('loaiInput').value = loai;
+            document.getElementById('btn-thu').className = 'loai-btn' + (loai === 'Thu' ? ' active-thu' : '');
+            document.getElementById('btn-chi').className = 'loai-btn' + (loai === 'Chi' ? ' active-chi' : '');
+        }
+        setLoai('@Model.LoaiGiaoDich');
+    </script>
+}
+
+
