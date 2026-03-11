@@ -1,89 +1,398 @@
-﻿
+﻿@model QLTaiChinh.Models.DashboardViewModel
 @{
     ViewData["Title"] = "TongQuan";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    // Serialize sang JSON để Chart.js dùng
+    var jsonOpts = new System.Text.Json.JsonSerializerOptions();
+    string ToJson(object o) => System.Text.Json.JsonSerializer.Serialize(o);
+
+    string danhMucLabels = ToJson(Model.DanhMucLabels);
+    string thuData = ToJson(Model.ThuData);
+    string chiData = ToJson(Model.ChiData);
+    string chiLabels = ToJson(Model.ChiLabels);
+    string chiValues = ToJson(Model.ChiValues);
+    string ngayLabels = ToJson(Model.NgayLabels);
+    string soDuTichLuy = ToJson(Model.SoDuTichLuy);
+    string tkLabels = ToJson(Model.TaiKhoanLabels);
+    string tkSoDu = ToJson(Model.TaiKhoanSoDu);
+
+    string FormatVnd(decimal v) => v.ToString("N0") + " ₫";
+    string PctColor(decimal pct) => pct >= 100 ? "#ff4444" : pct >= 80 ? "#f78166" : "#3fb950";
 }
 
-<div class="row">
-    <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-9">
-                        <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0">$12.34</h3>
-                            <p class="text-success ml-2 mb-0 font-weight-medium">+3.5%</p>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="icon icon-box-success ">
-                            <span class="mdi mdi-arrow-top-right icon-item"></span>
-                        </div>
-                    </div>
-                </div>
-                <h6 class="text-muted font-weight-normal">Potential growth</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-9">
-                        <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0">$17.34</h3>
-                            <p class="text-success ml-2 mb-0 font-weight-medium">+11%</p>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="icon icon-box-success">
-                            <span class="mdi mdi-arrow-top-right icon-item"></span>
-                        </div>
-                    </div>
-                </div>
-                <h6 class="text-muted font-weight-normal">Revenue current</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-9">
-                        <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0">$12.34</h3>
-                            <p class="text-danger ml-2 mb-0 font-weight-medium">-2.4%</p>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="icon icon-box-danger">
-                            <span class="mdi mdi-arrow-bottom-left icon-item"></span>
-                        </div>
-                    </div>
-                </div>
-                <h6 class="text-muted font-weight-normal">Daily Income</h6>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-9">
-                        <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0">$31.53</h3>
-                            <p class="text-success ml-2 mb-0 font-weight-medium">+3.5%</p>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="icon icon-box-success ">
-                            <span class="mdi mdi-arrow-top-right icon-item"></span>
-                        </div>
-                    </div>
-                </div>
-                <h6 class="text-muted font-weight-normal">Expense current</h6>
-            </div>
-        </div>
+
+@* ── HEADER ── *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">💰 Dashboard Tài Chính</h4>
+        <small style="color:var(--muted)">Tháng @Model.Thang / @Model.Nam</small>
     </div>
 </div>
+
+@* ── BỘ LỌC THÁNG / NĂM ── *@
+<form method="get" action="@Url.Action("TongQuan","TongQuan")">
+    <div class="filter-bar">
+        <label>Tháng:</label>
+        <select name="thang">
+            @for (int m = 1; m <= 12; m++)
+            {
+                if (m == Model.Thang)
+                {
+                    <option value="@m" selected>Tháng @m</option>
+                }
+                else
+                {
+                    <option value="@m">Tháng @m</option>
+                }
+            }
+        </select>
+        <label>Năm:</label>
+        <select name="nam">
+            @foreach (int y in (ViewBag.NamList as List<int> ?? new List<int>()))
+            {
+                if (y == Model.Nam)
+                {
+                    <option value="@y" selected>@y</option>
+                }
+                else
+                {
+                    <option value="@y">@y</option>
+                }
+            }
+        </select>
+        <button type="submit" class="btn-filter">Xem</button>
+    </div>
+</form>
+
+@* ── KPI ── *@
+<div class="kpi-row">
+    <div class="kpi thu">
+        <div class="kpi-label">Tổng Thu</div>
+        <div class="kpi-value">@FormatVnd(Model.TongThu)</div>
+        <div class="kpi-sub">Tháng @Model.Thang/@Model.Nam</div>
+    </div>
+    <div class="kpi chi">
+        <div class="kpi-label">Tổng Chi</div>
+        <div class="kpi-value">@FormatVnd(Model.TongChi)</div>
+        <div class="kpi-sub">@Model.GiaoDichGanDay.Count(g => g.LoaiGiaoDich == "Chi") giao dịch chi</div>
+    </div>
+    <div class="kpi net">
+        <div class="kpi-label">Thặng Dư</div>
+        <div class="kpi-value">@FormatVnd(Model.ThangDu)</div>
+        <div class="kpi-sub">
+            @if (Model.TongThu > 0)
+            {
+                @(Math.Round(Model.ThangDu * 100 / Model.TongThu, 1))
+            
+                @:% thu nhập
+            }
+        </div>
+    </div>
+    <div class="kpi sodu">
+        <div class="kpi-label">Tổng Số Dư</div>
+        <div class="kpi-value">@FormatVnd(Model.TongSoDu)</div>
+        <div class="kpi-sub">@Model.TaiKhoanLabels.Count tài khoản</div>
+    </div>
+</div>
+
+@* ── BIỂU ĐỒ: CỘT + TRÒN ── *@
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">
+            <span class="dot" style="background:var(--acc)"></span>
+            Thu / Chi Theo Danh Mục
+        </div>
+        @if (Model.DanhMucLabels.Any())
+        {
+            <div style="position:relative;height:260px">
+                <canvas id="barChart"></canvas>
+            </div>
+        }
+        else
+        {
+
+            <div class="empty">Không có dữ liệu trong tháng này</div>
+        }
+    </div>
+    <div class="card">
+        <div class="card-title">
+            <span class="dot" style="background:var(--chi)"></span>
+            Cơ Cấu Chi Tiêu
+        </div>
+        @if (Model.ChiLabels.Any())
+        {
+            <div style="position:relative;height:260px">
+                <canvas id="donutChart"></canvas>
+            </div>
+        }
+        else
+        {
+
+            <div class="empty">Chưa có khoản chi</div>
+        }
+    </div>
+</div>
+
+@* ── DÒNG TIỀN + NGÂN SÁCH ── *@
+<div class="grid-3">
+    <div class="card">
+        <div class="card-title">
+            <span class="dot" style="background:var(--purple)"></span>
+            Dòng Tiền Tích Lũy Theo Ngày
+        </div>
+        @if (Model.NgayLabels.Any())
+        {
+            <div style="position:relative;height:220px">
+                <canvas id="lineChart"></canvas>
+            </div>
+        }
+        else
+        {
+
+            <div class="empty">Không có giao dịch</div>
+        }
+    </div>
+    <div class="card">
+        <div class="card-title">
+            <span class="dot" style="background:var(--gold)"></span>
+            Tình Trạng Ngân Sách
+        </div>
+        @if (Model.NganSachItems.Any())
+        {
+            @foreach (var ns in Model.NganSachItems)
+            {
+                var pctColor = PctColor(ns.PhanTram);
+                var barW = Math.Min((double)ns.PhanTram, 100);
+                <div class="budget-item">
+                    <div class="budget-header">
+                        <span style="font-size:.8rem;font-weight:500">@ns.TenDanhMuc</span>
+                        <span class="budget-pct" style="color:@pctColor">
+                            @ns.PhanTram%
+                            @if (ns.TrangThai == "Vượt ngân sách")
+                            {
+                                <text>🔴</text>
+                            }
+                            else if (ns.TrangThai == "Sắp vượt (≥80%)")
+                            {
+
+                                <text>⚠️</text>
+                            }
+                        </span>
+                    </div>
+                    <div class="budget-bar-bg">
+                        <div class="budget-bar-fill"
+                             style="width:@barW%;background:@pctColor"></div>
+                    </div>
+                    <div class="budget-detail">
+                        <span>@FormatVnd(ns.DaChiTieu)</span>
+                        <span>/ @FormatVnd(ns.GioiHan)</span>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty">Chưa thiết lập ngân sách</div>
+        }
+    </div>
+</div>
+
+@* ── TÀI KHOẢN + GIAO DỊCH ── *@
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">
+            <span class="dot" style="background:var(--gold)"></span>
+            Số Dư Theo Tài Khoản
+        </div>
+        @if (Model.TaiKhoanLabels.Any())
+        {
+            <div style="position:relative;height:200px">
+                <canvas id="accountChart"></canvas>
+            </div>
+        }
+        else
+        {
+
+            <div class="empty">Chưa có tài khoản</div>
+        }
+    </div>
+    <div class="card">
+        <div class="card-title">
+            <span class="dot" style="background:var(--purple)"></span>
+            Giao Dịch Gần Đây
+        </div>
+        @if (Model.GiaoDichGanDay.Any())
+        {
+            <ul class="txn-list">
+                @foreach (var g in Model.GiaoDichGanDay)
+                {
+                    string emoji = g.LoaiGiaoDich == "Thu" ? "💵" : "💸";
+                    string sign = g.LoaiGiaoDich == "Thu" ? "+" : "-";
+                    <li class="txn-item">
+                        <div class="txn-left">
+                            <div class="txn-icon @g.LoaiGiaoDich">@emoji</div>
+                            <div class="txn-meta">
+                                <span>@g.MoTa</span>
+                                <small>@g.NgayGiaoDich · @g.HinhThuc</small>
+                            </div>
+                        </div>
+                        <span class="txn-amount @g.LoaiGiaoDich">
+                            @sign@FormatVnd(g.SoTien)
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+
+            <div class="empty">Không có giao dịch</div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        // ── Dữ liệu từ C# Model ──────────────────────────────────────
+        const danhMucLabels = @Html.Raw(danhMucLabels);
+        const thuData       = @Html.Raw(thuData);
+        const chiData       = @Html.Raw(chiData);
+        const chiLabels     = @Html.Raw(chiLabels);
+        const chiValues     = @Html.Raw(chiValues);
+        const ngayLabels    = @Html.Raw(ngayLabels);
+        const soDuTichLuy   = @Html.Raw(soDuTichLuy);
+        const tkLabels      = @Html.Raw(tkLabels);
+        const tkSoDu        = @Html.Raw(tkSoDu);
+
+        // ── Cấu hình mặc định Chart.js ───────────────────────────────
+        Chart.defaults.color         = '#8b949e';
+        Chart.defaults.borderColor   = '#30363d';
+        Chart.defaults.font.family   = "'Be Vietnam Pro', sans-serif";
+        Chart.defaults.font.size     = 11;
+
+        const fmtVnd = v => {
+          if (v >= 1_000_000) return (v/1_000_000).toFixed(1) + 'M';
+          if (v >= 1_000)     return (v/1_000).toFixed(0) + 'K';
+          return v;
+        };
+
+        // ── 1. Biểu đồ cột: Thu/Chi theo danh mục ────────────────────
+        if (document.getElementById('barChart') && danhMucLabels.length) {
+          new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+              labels: danhMucLabels,
+              datasets: [
+                {
+                  label: 'Thu (₫)',
+                  data: thuData,
+                  backgroundColor: 'rgba(63,185,80,0.75)',
+                  borderColor: '#3fb950', borderWidth: 1, borderRadius: 4
+                },
+                {
+                  label: 'Chi (₫)',
+                  data: chiData,
+                  backgroundColor: 'rgba(247,129,102,0.75)',
+                  borderColor: '#f78166', borderWidth: 1, borderRadius: 4
+                }
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { position: 'top', labels: { boxWidth: 10 } } },
+              scales: {
+                x: { ticks: { maxRotation: 35, minRotation: 20 } },
+                y: { ticks: { callback: fmtVnd } }
+              }
+            }
+          });
+        }
+
+        // ── 2. Biểu đồ tròn: Cơ cấu chi tiêu ────────────────────────
+        if (document.getElementById('donutChart') && chiLabels.length) {
+          new Chart(document.getElementById('donutChart'), {
+            type: 'doughnut',
+            data: {
+              labels: chiLabels,
+              datasets: [{
+                data: chiValues,
+                backgroundColor: ['#58a6ff','#3fb950','#d29922','#bc8cff','#f78166','#ff7b54','#a2d2ff','#06d6a0'],
+                borderColor: '#161b22', borderWidth: 3, hoverOffset: 8
+              }]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false, cutout: '65%',
+              plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8 } },
+                tooltip: {
+                  callbacks: {
+                    label: ctx => {
+                      const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                      const pct   = ((ctx.parsed / total) * 100).toFixed(1);
+                      return ` ${ctx.parsed.toLocaleString('vi-VN')} ₫ (${pct}%)`;
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+
+        // ── 3. Biểu đồ đường: Dòng tiền tích lũy ────────────────────
+        if (document.getElementById('lineChart') && ngayLabels.length) {
+          const ctx = document.getElementById('lineChart').getContext('2d');
+          const grad = ctx.createLinearGradient(0, 0, 0, 220);
+          grad.addColorStop(0, 'rgba(188,140,255,0.35)');
+          grad.addColorStop(1, 'rgba(188,140,255,0)');
+
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: ngayLabels,
+              datasets: [{
+                label: 'Số dư tích lũy',
+                data: soDuTichLuy,
+                borderColor: '#bc8cff', backgroundColor: grad,
+                fill: true, tension: 0.4,
+                pointBackgroundColor: '#bc8cff', pointRadius: 4, borderWidth: 2
+              }]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: { y: { ticks: { callback: fmtVnd } } }
+            }
+          });
+        }
+
+        // ── 4. Biểu đồ ngang: Số dư tài khoản ───────────────────────
+        if (document.getElementById('accountChart') && tkLabels.length) {
+          new Chart(document.getElementById('accountChart'), {
+            type: 'bar',
+            data: {
+              labels: tkLabels,
+              datasets: [{
+                label: 'Số dư (₫)',
+                data: tkSoDu,
+                backgroundColor: ['rgba(88,166,255,.7)','rgba(210,153,34,.7)','rgba(63,185,80,.7)','rgba(188,140,255,.7)'],
+                borderColor:     ['#58a6ff','#d29922','#3fb950','#bc8cff'],
+                borderWidth: 1, borderRadius: 6
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { ticks: { callback: fmtVnd } }
+              }
+            }
+          });
+        }
+    </script>
+}
+
+
 

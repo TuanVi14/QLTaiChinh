@@ -3,10 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    @await RenderSectionAsync("Styles", required: false)
     <title>@ViewData["Title"] - Quản lý tài chính cá nhân</title>
     <link rel="stylesheet" href="~/vendors/mdi/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="~/vendors/css/vendor.bundle.base.css">
     <link rel="stylesheet" href="~/css/style.css">
+
+    
+
+    /* Mobile: bỏ margin khi sidebar ẩn */
+    @@media (max-width: 991px) {
+    .page-body-wrapper { margin-left: 0; }
+    }
 </head>
 <body>
     <div class="container-scroller">

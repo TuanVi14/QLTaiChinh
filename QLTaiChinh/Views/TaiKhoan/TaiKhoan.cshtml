@@ -1,0 +1,538 @@
+﻿@model IEnumerable<QLTaiChinh.Data.TaiKhoan>
+@{
+    ViewData["Title"] = "TaiKhoan";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string Vnd(decimal v) => v.ToString("N0") + " ₫";
+    var loaiList = new[] { "Tiền mặt", "Ngân hàng", "Ví điện tử", "Thẻ tín dụng", "Tiết kiệm", "Đầu tư", "Khác" };
+    string IconLoai(string l) => l switch
+    {
+        "Ngân hàng" => "mdi-bank",
+        "Ví điện tử" => "mdi-wallet",
+        "Thẻ tín dụng" => "mdi-credit-card",
+        "Tiết kiệm" => "mdi-piggy-bank",
+        "Đầu tư" => "mdi-trending-up",
+        "Tiền mặt" => "mdi-cash",
+        _ => "mdi-bank-outline"
+    };
+    string ColorLoai(string l) => l switch
+    {
+        "Ngân hàng" => "#58a6ff",
+        "Ví điện tử" => "#8b5cf6",
+        "Thẻ tín dụng" => "#f78166",
+        "Tiết kiệm" => "#3fb950",
+        "Đầu tư" => "#ffab00",
+        "Tiền mặt" => "#00d25b",
+        _ => "#8b949e"
+    };
+}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .btn-add {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 20px;
+        font-size: .88rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-add:hover {
+            background: #007acc;
+        }
+
+    /* KPI */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .kpi {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 18px 22px;
+    }
+
+    .kpi-label {
+        font-size: .72rem;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        margin-bottom: 6px;
+    }
+
+    .kpi-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        font-family: 'Courier New',monospace;
+    }
+
+    /* Grid tài khoản */
+    .tk-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+        gap: 18px;
+    }
+
+    .tk-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 14px;
+        padding: 22px;
+        position: relative;
+        overflow: hidden;
+        transition: .2s;
+    }
+
+        .tk-card:hover {
+            border-color: #58a6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,.4);
+        }
+
+        .tk-card.inactive {
+            opacity: .55;
+        }
+
+        .tk-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 14px 14px 0 0;
+        }
+
+    .tk-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 14px;
+    }
+
+    .tk-name {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .tk-loai {
+        font-size: .75rem;
+        color: #8b949e;
+        margin-bottom: 16px;
+    }
+
+    .tk-sodu {
+        font-size: 1.4rem;
+        font-weight: 700;
+        font-family: 'Courier New',monospace;
+        margin-bottom: 16px;
+    }
+
+    .tk-badge {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        font-size: .68rem;
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 3px 8px;
+    }
+
+        .tk-badge.active {
+            background: rgba(63,185,80,.15);
+            color: #3fb950;
+        }
+
+        .tk-badge.inactive {
+            background: rgba(139,148,158,.1);
+            color: #8b949e;
+        }
+
+    .tk-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-sm {
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        text-align: center;
+    }
+
+    .btn-edit-sm {
+        background: rgba(88,166,255,.15);
+        color: #58a6ff;
+        flex: 1;
+    }
+
+        .btn-edit-sm:hover {
+            background: rgba(88,166,255,.3);
+        }
+
+    .btn-del-sm {
+        background: rgba(247,129,102,.15);
+        color: #f78166;
+    }
+
+        .btn-del-sm:hover {
+            background: rgba(247,129,102,.3);
+        }
+
+    .btn-toggle {
+        background: rgba(139,148,158,.1);
+        color: #8b949e;
+        flex: 1;
+    }
+
+        .btn-toggle:hover {
+            background: rgba(139,148,158,.2);
+        }
+
+    /* Alert */
+    .alert-s {
+        background: rgba(63,185,80,.15);
+        border: 1px solid rgba(63,185,80,.3);
+        color: #3fb950;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+    }
+
+    .alert-e {
+        background: rgba(247,129,102,.1);
+        border: 1px solid rgba(247,129,102,.3);
+        color: #f78166;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+    }
+
+    /* Modal thêm/sửa */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.6);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 14px;
+        padding: 28px;
+        width: 100%;
+        max-width: 460px;
+        position: relative;
+    }
+
+    .modal-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-size: .78rem;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        background: #21262d !important;
+        border: 1px solid #30363d !important;
+        color: #e6edf3 !important;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: .9rem;
+        width: 100%;
+        outline: none;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0090e7 !important;
+            box-shadow: none !important;
+        }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-primary-m {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-size: .9rem;
+        font-weight: 600;
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .btn-cancel-m {
+        background: #21262d;
+        color: #8b949e;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: .9rem;
+        cursor: pointer;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: none;
+        border: none;
+        color: #8b949e;
+        font-size: 1.3rem;
+        cursor: pointer;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #8b949e;
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+    }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+</style>
+
+<div class="page-header">
+    <div>
+        <h4 style="margin:0;font-weight:700;color:#fff">🏦 Quản lý Tài khoản</h4>
+        <small style="color:#8b949e">@ViewBag.SoTaiKhoan tài khoản đang hoạt động</small>
+    </div>
+    <button class="btn-add" onclick="openModal('create')">
+        <i class="mdi mdi-plus"></i> Thêm tài khoản
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-s"><i class="mdi mdi-check-circle"></i> @TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-e"><i class="mdi mdi-alert-circle"></i> @TempData["Error"]</div>
+}
+
+@* KPI *@
+<div class="kpi-row">
+    <div class="kpi">
+        <div class="kpi-label">Tổng số dư</div>
+        <div class="kpi-value" style="color:#58a6ff">@Vnd((decimal)ViewBag.TongSoDu)</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Tài khoản hoạt động</div>
+        <div class="kpi-value" style="color:#3fb950">@ViewBag.SoTaiKhoan</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Tổng tài khoản</div>
+        <div class="kpi-value" style="color:#e6edf3">@Model.Count()</div>
+    </div>
+</div>
+
+@* Danh sách tài khoản *@
+@if (Model.Any())
+{
+    <div class="tk-grid">
+        @foreach (var tk in Model)
+        {
+            string col = ColorLoai(tk.LoaiTaiKhoan);
+            string icon = IconLoai(tk.LoaiTaiKhoan);
+            <div class="tk-card @(tk.TrangThai ? "" : "inactive")" style="--c:@col">
+                <style>
+                    .tk-card[style*='@col']::before {
+                        background: @col
+                    }</style>
+                <span class="tk-badge @(tk.TrangThai ? "active" : "inactive")">
+                    @(tk.TrangThai ? "● Hoạt động" : "○ Tắt")
+                </span>
+                <div class="tk-icon" style="background:@(col)22;color:@col">
+                    <i class="mdi @icon"></i>
+                </div>
+                <div class="tk-name">@tk.TenTaiKhoan</div>
+                <div class="tk-loai">@tk.LoaiTaiKhoan</div>
+                <div class="tk-sodu" style="color:@(tk.SoDu >= 0 ? "#3fb950" : "#f78166")">
+                    @Vnd(tk.SoDu)
+                </div>
+                <div class="tk-actions">
+                    <button class="btn-sm btn-edit-sm"
+                            onclick="openEdit(@tk.TaiKhoanId,'@tk.TenTaiKhoan','@tk.LoaiTaiKhoan',@tk.SoDu)">
+                        <i class="mdi mdi-pencil"></i> Sửa
+                    </button>
+                    <form method="post" action="/TaiKhoan/ToggleStatus/@tk.TaiKhoanId" style="flex:1">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-sm btn-toggle" style="width:100%">
+                            <i class="mdi mdi-@(tk.TrangThai ? "eye-off" : "eye")"></i>
+                            @(tk.TrangThai ? "Tắt" : "Bật")
+                        </button>
+                    </form>
+                    <form method="post" action="/TaiKhoan/Delete/@tk.TaiKhoanId"
+                          onsubmit="return confirm('Xác nhận xoá tài khoản này?')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-sm btn-del-sm">
+                            <i class="mdi mdi-delete"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <i class="mdi mdi-bank-outline"></i>
+        <p>Chưa có tài khoản nào. Hãy thêm tài khoản đầu tiên!</p>
+        <button class="btn-add" onclick="openModal('create')" style="margin-top:12px">
+            <i class="mdi mdi-plus"></i> Thêm tài khoản
+        </button>
+    </div>
+}
+
+@* ── Modal Thêm ── *@
+<div class="modal-overlay" id="modal-create">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('create')">✕</button>
+        <div class="modal-title">➕ Thêm tài khoản mới</div>
+        <form method="post" action="/TaiKhoan/Create">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label class="form-label">Tên tài khoản <span style="color:#f78166">*</span></label>
+                <input type="text" name="TenTaiKhoan" class="form-control" placeholder="VD: Vietcombank, Ví MoMo..." required maxlength="100" />
+            </div>
+            <div class="row-2">
+                <div class="form-group">
+                    <label class="form-label">Loại tài khoản <span style="color:#f78166">*</span></label>
+                    <select name="LoaiTaiKhoan" class="form-select" required>
+                        @foreach (var l in loaiList)
+                        {
+                            <option value="@l">@l</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số dư ban đầu (₫)</label>
+                    <input type="number" name="SoDu" class="form-control" value="0" step="1000" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-primary-m">Thêm tài khoản</button>
+                <button type="button" class="btn-cancel-m" onclick="closeModal('create')">Huỷ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ── Modal Sửa ── *@
+<div class="modal-overlay" id="modal-edit">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('edit')">✕</button>
+        <div class="modal-title">✏️ Sửa tài khoản</div>
+        <form method="post" id="form-edit">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label class="form-label">Tên tài khoản</label>
+                <input type="text" name="TenTaiKhoan" id="edit-ten" class="form-control" required maxlength="100" />
+            </div>
+            <div class="row-2">
+                <div class="form-group">
+                    <label class="form-label">Loại tài khoản</label>
+                    <select name="LoaiTaiKhoan" id="edit-loai" class="form-select">
+                        @foreach (var l in loaiList)
+                        {
+                            <option value="@l">@l</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số dư hiện tại (₫)</label>
+                    <input type="number" name="SoDu" id="edit-sodu" class="form-control" step="1000" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-primary-m">Lưu thay đổi</button>
+                <button type="button" class="btn-cancel-m" onclick="closeModal('edit')">Huỷ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal(type) {
+            document.getElementById('modal-' + type).classList.add('show');
+        }
+        function closeModal(type) {
+            document.getElementById('modal-' + type).classList.remove('show');
+        }
+        function openEdit(id, ten, loai, sodu) {
+            document.getElementById('form-edit').action = '/TaiKhoan/Edit/' + id;
+            document.getElementById('edit-ten').value   = ten;
+            document.getElementById('edit-loai').value  = loai;
+            document.getElementById('edit-sodu').value  = sodu;
+            openModal('edit');
+        }
+        // Đóng modal khi click ngoài
+        document.querySelectorAll('.modal-overlay').forEach(function(m) {
+            m.addEventListener('click', function(e) {
+                if (e.target === m) m.classList.remove('show');
+            });
+        });
+    </script>
+}

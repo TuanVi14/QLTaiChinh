@@ -1,4 +1,5 @@
-﻿@{
+﻿@model QLTaiChinh.Models.DangKyViewModel
+@{
     Layout = null;
 }
 
@@ -158,15 +159,22 @@
             <p>Hãy nhập đầy đủ thông tin</p>
         </div>
 
-        <form>
+        <form asp-action="Register" method="post">
             <div class="form-group">
-                <input type="email" placeholder="Email " required>
+                <input asp-for="HoTen" type="text" placeholder="Họ tên " required>
+                <span asp-validation-for="HoTen" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="password" placeholder="Mật khẩu" required>
+                <input asp-for="Email" type="email" placeholder="Email " required>
+                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="password" placeholder="Nhập lại mật khẩu" required>
+                <input asp-for="Password" type="password" placeholder="Mật khẩu" required>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input asp-for="ConfimPW" type="password" placeholder="Nhập lại mật khẩu" required>
+                <span asp-validation-for="ConfimPW" class="text-danger"></span>
             </div>
 
             <button type="submit" class="btn btn-primary">Đăng ký</button>

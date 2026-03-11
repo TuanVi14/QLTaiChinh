@@ -5,6 +5,8 @@ namespace QLTaiChinh.Data;
 
 public partial class NguoiDung
 {
+    private string passwordHash;
+
     public int NguoiDungId { get; set; }
 
     public string HoTen { get; set; } = null!;

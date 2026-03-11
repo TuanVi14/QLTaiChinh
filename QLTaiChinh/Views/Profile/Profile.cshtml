@@ -1,0 +1,430 @@
+﻿@model QLTaiChinh.Data.NguoiDung
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string Vnd(decimal v) => v.ToString("N0") + " ₫";
+}
+
+<style>
+    .profile-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 24px;
+    }
+
+    @@media (max-width:768px) {
+        .profile-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Card trái */
+    .profile-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 14px;
+        padding: 28px;
+        text-align: center;
+    }
+
+    .avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: linear-gradient(135deg,#0090e7,#8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0 auto 16px;
+    }
+
+    .profile-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .profile-email {
+        font-size: .82rem;
+        color: #8b949e;
+        margin-bottom: 20px;
+    }
+
+    .stat-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .stat-item {
+        background: #21262d;
+        border-radius: 10px;
+        padding: 12px 8px;
+        text-align: center;
+    }
+
+    .stat-val {
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: 'Courier New',monospace;
+    }
+
+    .stat-lbl {
+        font-size: .68rem;
+        color: #8b949e;
+        margin-top: 3px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .joined {
+        font-size: .75rem;
+        color: #8b949e;
+        margin-top: 16px;
+    }
+
+    .badge-active {
+        display: inline-block;
+        background: rgba(63,185,80,.15);
+        color: #3fb950;
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: .75rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    /* Panels phải */
+    .panel {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .panel-title {
+        font-size: .9rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #30363d;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-label {
+        font-size: .78rem;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        background: #21262d !important;
+        border: 1px solid #30363d !important;
+        color: #e6edf3 !important;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: .9rem;
+        width: 100%;
+        outline: none;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0090e7 !important;
+            box-shadow: none !important;
+        }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .row-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+    }
+
+    .btn-save {
+        background: #0090e7;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-size: .88rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-save:hover {
+            background: #007acc;
+        }
+
+    .btn-danger {
+        background: rgba(247,129,102,.15);
+        color: #f78166;
+        border: 1px solid rgba(247,129,102,.3);
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-size: .88rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-danger:hover {
+            background: rgba(247,129,102,.3);
+        }
+
+    .alert-s {
+        background: rgba(63,185,80,.15);
+        border: 1px solid rgba(63,185,80,.3);
+        color: #3fb950;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+        font-size: .88rem;
+    }
+
+    .alert-e {
+        background: rgba(247,129,102,.1);
+        border: 1px solid rgba(247,129,102,.3);
+        color: #f78166;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+        font-size: .88rem;
+    }
+
+    .pw-toggle {
+        position: relative;
+    }
+
+        .pw-toggle .form-control {
+            padding-right: 42px;
+        }
+
+    .pw-eye {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #8b949e;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .divider {
+        height: 1px;
+        background: #30363d;
+        margin: 20px 0;
+    }
+
+    .logout-area {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .logout-text {
+        font-size: .88rem;
+        color: #8b949e;
+        max-width: 300px;
+    }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-s"><i class="mdi mdi-check-circle"></i> @TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-e"><i class="mdi mdi-alert-circle"></i> @TempData["Error"]</div>
+}
+
+<h4 style="margin:0 0 20px;font-weight:700;color:#fff">👤 Hồ sơ cá nhân</h4>
+
+<div class="profile-layout">
+
+    @* ── Cột trái: avatar + thống kê ── *@
+    <div>
+        <div class="profile-card">
+            <div class="avatar">@Model.HoTen.Substring(0, 1).ToUpper()</div>
+            <div class="profile-name">@Model.HoTen</div>
+            <div class="profile-email">@Model.Email</div>
+            <div class="badge-active">● Đang hoạt động</div>
+
+            @if (Model.NgaySinh.HasValue)
+            {
+                <div style="font-size:.8rem;color:#8b949e;margin-bottom:6px">
+                    🎂 @Model.NgaySinh.Value.ToString("dd/MM/yyyy")
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.GioiTinh))
+            {
+                <div style="font-size:.8rem;color:#8b949e;margin-bottom:10px">
+                    @(Model.GioiTinh == "Nam" ? "♂" : Model.GioiTinh == "Nữ" ? "♀" : "⚧") @Model.GioiTinh
+                </div>
+            }
+
+            <div class="stat-row">
+                <div class="stat-item">
+                    <div class="stat-val" style="color:#3fb950">@Vnd((decimal)ViewBag.TongThu)</div>
+                    <div class="stat-lbl">Tổng thu</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" style="color:#f78166">@Vnd((decimal)ViewBag.TongChi)</div>
+                    <div class="stat-lbl">Tổng chi</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" style="color:#58a6ff">@ViewBag.TongGiaoDich</div>
+                    <div class="stat-lbl">Giao dịch</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val" style="color:#8b5cf6">@ViewBag.SoTaiKhoan</div>
+                    <div class="stat-lbl">Tài khoản</div>
+                </div>
+            </div>
+
+            <div class="joined">📅 Tham gia: @Model.NgayTao.ToString("dd/MM/yyyy")</div>
+        </div>
+    </div>
+
+    @* ── Cột phải: form ── *@
+    <div>
+
+        @* Panel 1: Thông tin cơ bản *@
+        <div class="panel">
+            <div class="panel-title">
+                <i class="mdi mdi-account-edit" style="color:#58a6ff"></i>
+                Thông tin cá nhân
+            </div>
+            <form method="post" action="/Profile/UpdateInfo">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="text" class="form-control" value="@Model.Email" disabled
+                           style="opacity:.5;cursor:not-allowed" />
+                    <small style="color:#8b949e;font-size:.75rem">Email không thể thay đổi</small>
+                </div>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên <span style="color:#f78166">*</span></label>
+                        <input type="text" name="HoTen" class="form-control"
+                               value="@Model.HoTen" required maxlength="100" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giới tính</label>
+                        <select name="GioiTinh" class="form-select">
+                            <option value="">-- Chọn --</option>
+                            @foreach (var g in new[] { "Nam", "Nữ", "Khác" })
+                            {
+                                if (Model.GioiTinh == g)
+                                {
+                                    <option value="@g" selected>@g</option>
+                                }
+                                else
+                                {
+                                    <option value="@g">@g</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ngày sinh</label>
+                    <input type="date" name="NgaySinh" class="form-control"
+                           value="@Model.NgaySinh?.ToString("yyyy-MM-dd")" />
+                </div>
+                <button type="submit" class="btn-save">
+                    <i class="mdi mdi-content-save"></i> Lưu thay đổi
+                </button>
+            </form>
+        </div>
+
+        @* Panel 2: Đổi mật khẩu *@
+        <div class="panel">
+            <div class="panel-title">
+                <i class="mdi mdi-lock-reset" style="color:#ffab00"></i>
+                Đổi mật khẩu
+            </div>
+            <form method="post" action="/Profile/ChangePassword">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu hiện tại <span style="color:#f78166">*</span></label>
+                    <div class="pw-toggle">
+                        <input type="password" name="MatKhauCu" id="pw-old" class="form-control" required placeholder="Nhập mật khẩu cũ" />
+                        <i class="mdi mdi-eye pw-eye" onclick="togglePw('pw-old',this)"></i>
+                    </div>
+                </div>
+                <div class="row-2">
+                    <div class="form-group">
+                        <label class="form-label">Mật khẩu mới <span style="color:#f78166">*</span></label>
+                        <div class="pw-toggle">
+                            <input type="password" name="MatKhauMoi" id="pw-new" class="form-control" required minlength="6" placeholder="Tối thiểu 6 ký tự" />
+                            <i class="mdi mdi-eye pw-eye" onclick="togglePw('pw-new',this)"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Xác nhận mật khẩu <span style="color:#f78166">*</span></label>
+                        <div class="pw-toggle">
+                            <input type="password" name="XacNhan" id="pw-confirm" class="form-control" required placeholder="Nhập lại mật khẩu mới" />
+                            <i class="mdi mdi-eye pw-eye" onclick="togglePw('pw-confirm',this)"></i>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-save" style="background:#ffab00">
+                    <i class="mdi mdi-lock-check"></i> Đổi mật khẩu
+                </button>
+            </form>
+        </div>
+
+        @* Panel 3: Đăng xuất *@
+        <div class="panel">
+            <div class="panel-title">
+                <i class="mdi mdi-logout" style="color:#f78166"></i>
+                Đăng xuất
+            </div>
+            <div class="logout-area">
+                <div class="logout-text">
+                    Đăng xuất khỏi tài khoản. Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng.
+                </div>
+                <a href="/Profile/Logout"
+                   onclick="return confirm('Bạn có chắc muốn đăng xuất?')"
+                   class="btn-danger" style="text-decoration:none">
+                    <i class="mdi mdi-logout"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePw(id, icon) {
+            var input = document.getElementById(id);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('mdi-eye','mdi-eye-off');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('mdi-eye-off','mdi-eye');
+            }
+        }
+    </script>
+}
+
