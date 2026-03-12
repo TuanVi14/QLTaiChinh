@@ -13,12 +13,7 @@
             </span>
             Xuất Báo Cáo Thu - Chi
         </h3>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Trang chủ</a></li>
-                <li class="breadcrumb-item active">Xuất báo cáo</li>
-            </ol>
-        </nav>
+        
     </div>
 
     <div class="row">
@@ -168,33 +163,31 @@
 </div>
 
 @section Scripts {
-<script>
-    function xuatBaoCao(loai) {
-        const thang = document.getElementById('selThang').value;
-        const nam   = document.getElementById('selNam').value;
+    <script>
+        function xuatBaoCao(loai) {
+            const thang = document.getElementById('selThang').value;
+            const nam   = document.getElementById('selNam').value;
 
-        // Hiện loading
-        const overlay = document.getElementById('loadingOverlay');
-        overlay.classList.remove('d-none');
-        overlay.classList.add('d-flex');
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.remove('d-none');
+            overlay.classList.add('d-flex');
 
-        // Tạo URL theo loại
-        let url = loai === 'excel'
-            ? `/Report/ExportExcel?thang=${thang}&nam=${nam}`
-            : `/Report/ExportPdf?thang=${thang}&nam=${nam}`;
+            let url = loai === 'excel'
+                ? `/Report/ExportExcel?thang=${thang}&nam=${nam}`
+                : `/Report/ExportPdf?thang=${thang}&nam=${nam}`;
 
-        // Dùng iframe ẩn để trigger download
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = url;
-        document.body.appendChild(iframe);
+            // Dùng thẻ <a> click thay vì iframe
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
 
-        // Ẩn loading sau 3 giây
-        setTimeout(() => {
-            overlay.classList.add('d-none');
-            overlay.classList.remove('d-flex');
-            document.body.removeChild(iframe);
-        }, 3000);
-    }
-</script>
+            setTimeout(() => {
+                overlay.classList.add('d-none');
+                overlay.classList.remove('d-flex');
+            }, 3000);
+        }
+    </script>
 }

@@ -10,14 +10,12 @@ using SysFile = System.IO.File;
 
 namespace QLTaiChinh.Controllers
 {
-    [Authorize]
     public class ReportController : BaseController
     {
 
         private readonly IConfiguration _configuration;
-        private static QuanLyTaiChinhCaNhanContext context;
 
-        public ReportController(IConfiguration configuration):base(context)
+        public ReportController(IConfiguration configuration, QuanLyTaiChinhCaNhanContext context) :base(context)
         {
             _configuration = configuration;
         }
@@ -29,7 +27,7 @@ namespace QLTaiChinh.Controllers
         }
 
         private string GetConnectionString()
-            => _configuration.GetConnectionString("DefaultConnection")!;
+            => _configuration.GetConnectionString("QLTaiChinh")!;
 
         // ============================================================
         // INDEX - Trang chọn báo cáo

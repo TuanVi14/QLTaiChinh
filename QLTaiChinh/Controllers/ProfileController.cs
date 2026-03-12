@@ -86,6 +86,61 @@ namespace QLTaiChinh.Controllers
             return RedirectToAction(nameof(Profile));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CapNhatAnh(ProfileViewModel vm)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserID");
+            if (userId == null) return RedirectToAction("Login", "Login");
+
+            var user = _db.NguoiDungs.Find(userId);
+            if (user == null) return NotFound();
+
+            if (vm.AnhDaiDienFile != null && vm.AnhDaiDienFile.Length > 0)
+            {
+                // Kiểm tra định dạng
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var ext = Path.GetExtension(vm.AnhDaiDienFile.FileName).ToLower();
+                if (!allowedExtensions.Contains(ext))
+                {
+                    TempData["Error"] = "Chỉ chấp nhận file ảnh (.jpg, .jpeg, .png, .gif)";
+                    return RedirectToAction("Profile");
+                }
+
+                // Kiểm tra kích thước (tối đa 2MB)
+                if (vm.AnhDaiDienFile.Length > 2 * 1024 * 1024)
+                {
+                    TempData["Error"] = "Ảnh không được vượt quá 2MB";
+                    return RedirectToAction("Profile");
+                }
+
+                // Xóa ảnh cũ nếu không phải ảnh mặc định
+                if (!string.IsNullOrEmpty(user.AnhDaiDien) && !user.AnhDaiDien.Contains("face15.jpg"))
+                {
+                    var oldPath = Path.Combine(_env.WebRootPath, user.AnhDaiDien.TrimStart('/'));
+                    if (System.IO.File.Exists(oldPath))
+                        System.IO.File.Delete(oldPath);
+                }
+
+                // Lưu ảnh mới
+                var fileName = $"avatar_{userId}_{DateTime.Now.Ticks}{ext}";
+                var uploadFolder = Path.Combine(_env.WebRootPath, "images", "avatars");
+                Directory.CreateDirectory(uploadFolder); // tạo thư mục nếu chưa có
+                var filePath = Path.Combine(uploadFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                    await vm.AnhDaiDienFile.CopyToAsync(stream);
+
+                user.AnhDaiDien = $"/images/avatars/{fileName}";
+            }
+
+            user.NgayCapNhat = DateTime.Now;
+            await _db.SaveChangesAsync();
+
+            TempData["Success"] = "Cập nhật ảnh đại diện thành công!";
+            return RedirectToAction("Profile");
+        }
+
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
