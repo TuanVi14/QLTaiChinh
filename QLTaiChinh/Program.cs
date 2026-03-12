@@ -8,6 +8,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<QuanLyTaiChinhCaNhanContext>(options => { options.UseSqlServer(builder.Configuration.GetConnectionString("QLTaiChinh")); });
 
 builder.Services.AddSession();
+// Thêm d?ng này ð? fix l?i No DefaultChallengeScheme
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/Login/Login";
+    });
 
 var app = builder.Build();
 
@@ -20,7 +26,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseSession();
-
+app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
