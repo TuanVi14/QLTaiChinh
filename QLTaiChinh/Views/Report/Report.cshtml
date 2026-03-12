@@ -1,0 +1,200 @@
+﻿
+@{
+    ViewData["Title"] = "Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int currentMonth = (int)ViewBag.CurrentMonth;
+    int currentYear = (int)ViewBag.CurrentYear;
+}
+<div class="content-wrapper">
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+                <i class="mdi mdi-file-document-box"></i>
+            </span>
+            Xuất Báo Cáo Thu - Chi
+        </h3>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Trang chủ</a></li>
+                <li class="breadcrumb-item active">Xuất báo cáo</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <!-- Card chọn tháng/năm -->
+        <div class="col-12 col-lg-5 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0"><i class="mdi mdi-calendar-range me-2"></i>Chọn kỳ báo cáo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tháng</label>
+                        <select id="selThang" class="form-select">
+                            @for (int m = 1; m <= 12; m++)
+                            {
+                                <option value="@m" selected="@(m == currentMonth)">
+                                    Tháng @m.ToString("D2")
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Năm</label>
+                        <select id="selNam" class="form-select">
+                            @for (int y = currentYear - 2; y <= currentYear + 1; y++)
+                            {
+                                <option value="@y" selected="@(y == currentYear)">@y</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button onclick="xuatBaoCao('excel')" class="btn btn-success btn-lg">
+                            <i class="mdi mdi-microsoft-excel me-2"></i>
+                            Xuất Excel (.xlsx)
+                        </button>
+                        <button onclick="xuatBaoCao('pdf')" class="btn btn-danger btn-lg">
+                            <i class="mdi mdi-file-pdf me-2"></i>
+                            Xuất PDF (.pdf)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hướng dẫn & Thông tin -->
+        <div class="col-12 col-lg-7 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-gradient-info text-white">
+                    <h5 class="mb-0"><i class="mdi mdi-information-outline me-2"></i>Nội dung báo cáo</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Báo cáo sẽ bao gồm toàn bộ giao dịch trong tháng được chọn, với các thông tin:</p>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="d-flex align-items-start">
+                                <i class="mdi mdi-check-circle text-success fs-5 me-2 mt-1"></i>
+                                <div>
+                                    <strong>Ngày giao dịch</strong>
+                                    <p class="text-muted small mb-0">Theo thứ tự thời gian</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-start">
+                                <i class="mdi mdi-check-circle text-success fs-5 me-2 mt-1"></i>
+                                <div>
+                                    <strong>Loại giao dịch</strong>
+                                    <p class="text-muted small mb-0">Thu nhập / Chi tiêu</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-start">
+                                <i class="mdi mdi-check-circle text-success fs-5 me-2 mt-1"></i>
+                                <div>
+                                    <strong>Danh mục</strong>
+                                    <p class="text-muted small mb-0">Phân loại chi tiêu</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-start">
+                                <i class="mdi mdi-check-circle text-success fs-5 me-2 mt-1"></i>
+                                <div>
+                                    <strong>Số tiền</strong>
+                                    <p class="text-muted small mb-0">Định dạng tiền VNĐ</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-start">
+                                <i class="mdi mdi-check-circle text-success fs-5 me-2 mt-1"></i>
+                                <div>
+                                    <strong>Mô tả giao dịch</strong>
+                                    <p class="text-muted small mb-0">Ghi chú chi tiết</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-start">
+                                <i class="mdi mdi-check-circle text-success fs-5 me-2 mt-1"></i>
+                                <div>
+                                    <strong>Tổng kết cân đối</strong>
+                                    <p class="text-muted small mb-0">Thu - Chi = Cân đối</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row g-2 mt-1">
+                        <div class="col-6">
+                            <div class="card border-success">
+                                <div class="card-body py-2 px-3 text-center">
+                                    <i class="mdi mdi-microsoft-excel text-success fs-4"></i>
+                                    <p class="mb-0 small fw-semibold text-success">Excel</p>
+                                    <p class="mb-0 text-muted" style="font-size:11px">Màu sắc, lọc, tính toán</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card border-danger">
+                                <div class="card-body py-2 px-3 text-center">
+                                    <i class="mdi mdi-file-pdf text-danger fs-4"></i>
+                                    <p class="mb-0 small fw-semibold text-danger">PDF</p>
+                                    <p class="mb-0 text-muted" style="font-size:11px">In ấn, chia sẻ, lưu trữ</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+         style="background:rgba(0,0,0,0.5); z-index:9999;">
+        <div class="text-center text-white">
+            <div class="spinner-border text-light mb-3" style="width:3rem;height:3rem;" role="status"></div>
+            <p class="fs-5">Đang tạo báo cáo...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function xuatBaoCao(loai) {
+        const thang = document.getElementById('selThang').value;
+        const nam   = document.getElementById('selNam').value;
+
+        // Hiện loading
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.classList.remove('d-none');
+        overlay.classList.add('d-flex');
+
+        // Tạo URL theo loại
+        let url = loai === 'excel'
+            ? `/Report/ExportExcel?thang=${thang}&nam=${nam}`
+            : `/Report/ExportPdf?thang=${thang}&nam=${nam}`;
+
+        // Dùng iframe ẩn để trigger download
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+
+        // Ẩn loading sau 3 giây
+        setTimeout(() => {
+            overlay.classList.add('d-none');
+            overlay.classList.remove('d-flex');
+            document.body.removeChild(iframe);
+        }, 3000);
+    }
+</script>
+}
