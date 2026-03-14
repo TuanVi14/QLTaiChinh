@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QLTaiChinh.Data;
@@ -190,6 +191,75 @@ namespace QLTaiChinh.Controllers
             {
                 "Tiền mặt", "Chuyển khoản", "Thẻ tín dụng", "Thẻ ghi nợ", "Ví điện tử", "Khác"
             });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchSuggest(string q)
+        {
+            var userId = HttpContext.Session.GetInt32("UserID");
+            if (userId == null)
+                return Json(new { success = false });
+
+            if (string.IsNullOrWhiteSpace(q))
+                return Json(new { success = true, data = new object[] { } });
+
+            string keyword = q.Trim().ToLower();
+
+            var results = await _db.GiaoDiches
+                .Include(g => g.DanhMuc)
+                .Where(g => g.NguoiDungId == userId && (
+                    (g.MoTa != null && g.MoTa.ToLower().Contains(keyword)) ||
+                    (g.GhiChu != null && g.GhiChu.ToLower().Contains(keyword)) ||
+                    g.DanhMuc.TenDanhMuc.ToLower().Contains(keyword)
+                ))
+                .OrderByDescending(g => g.NgayGiaoDich)
+                .Take(7)
+                .Select(g => new
+                {
+                    id = g.GiaoDichId,
+                    moTa = g.MoTa ?? g.GhiChu ?? "(Khong co mo ta)",
+                    soTien = g.SoTien,
+                    loai = g.LoaiGiaoDich,
+                    danhMuc = g.DanhMuc.TenDanhMuc,
+                    ngay = g.NgayGiaoDich.ToString("dd/MM/yyyy")
+                })
+                .ToListAsync();
+
+            return Json(new { success = true, data = results });
+        }
+
+        // -----------------------------------------------
+        // GET: /GiaoDich/KetQuaTimKiem?q=cafe
+        // -----------------------------------------------
+        [HttpGet]
+        public async Task<IActionResult> KetQuaTimKiem(string q)
+        {
+            var userId = HttpContext.Session.GetInt32("UserID");
+            if (userId == null)
+                return RedirectToAction("Login", "Login");
+
+            var query = _db.GiaoDiches
+                .Include(g => g.DanhMuc)
+                .Include(g => g.TaiKhoan)
+                .Where(g => g.NguoiDungId == userId);
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                string keyword = q.Trim().ToLower();
+                query = query.Where(g =>
+                    (g.MoTa != null && g.MoTa.ToLower().Contains(keyword)) ||
+                    (g.GhiChu != null && g.GhiChu.ToLower().Contains(keyword)) ||
+                    g.DanhMuc.TenDanhMuc.ToLower().Contains(keyword)
+                );
+            }
+
+            var ketQua = await query
+                .OrderByDescending(g => g.NgayGiaoDich)
+                .ToListAsync();
+
+            ViewData["TuKhoa"] = q;
+            ViewData["TongKet"] = ketQua.Count;
+            return View(ketQua);
         }
     }
 }

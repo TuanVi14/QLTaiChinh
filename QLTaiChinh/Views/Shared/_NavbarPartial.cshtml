@@ -11,33 +11,46 @@
         </button>
         <ul class="navbar-nav w-100">
             <li class="nav-item w-100">
-                <form class="nav-link mt-2 mt-md-0 d-none d-lg-flex search">
-                    <input type="text" class="form-control" placeholder="Tìm kiếm giao dịch...">
+                <form asp-action="KetQuaTimKiem" asp-controller="GiaoDich" class="nav-link mt-2 mt-md-0 d-none d-lg-flex search"
+                     id="searchWrapper" style="position: relative;">
+
+                    <input type="text"
+                           id="globalSearchInput"
+                           class="form-control"
+                           placeholder="Tim kiem giao dich..."
+                           autocomplete="off" />
+
+                    <div id="searchDropdown" style="
+                        display: none;
+                        position: absolute;
+                        top: calc(100% + 2px);
+                        left: 0;
+                        right: 0;
+                        background: #1e2130;
+                        border: 1px solid #2c2e33;
+                        border-radius: 0 0 6px 6px;
+                        z-index: 9999;
+                        overflow: hidden;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+
+                        <div id="searchResults">
+                            <div id="searchHint" style="padding: 12px 16px; color: #6c7293; font-size: 13px;">
+                                Go de tim theo mo ta hoac danh muc...
+                            </div>
+                        </div>
+
+                        <div id="searchViewAll" style="display: none; border-top: 1px solid #2c2e33;">
+                            <a id="searchViewAllLink" href="#"
+                               style="display: block; padding: 10px 16px; color: #4482ff;
+                                      font-size: 13px; text-align: center; text-decoration: none;">
+                                Xem tat ca ket qua &rarr;
+                            </a>
+                        </div>
+                    </div>
                 </form>
             </li>
         </ul>
         <ul class="navbar-nav navbar-nav-right">
-            <li class="nav-item dropdown border-left">
-                <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-toggle="dropdown">
-                    <i class="mdi mdi-bell"></i>
-                    <span class="count bg-danger"></span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
-                    <h6 class="p-3 mb-0">Thông báo ngân sách [cite: 74]</h6>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item preview-item">
-                        <div class="preview-thumbnail">
-                            <div class="preview-icon bg-dark rounded-circle">
-                                <i class="mdi mdi-calendar text-success"></i>
-                            </div>
-                        </div>
-                        <div class="preview-item-content">
-                            <p class="preview-subject mb-1">Cảnh báo chi tiêu [cite: 154]</p>
-                            <p class="text-muted ellipsis mb-0"> Bạn đã dùng hết 80% ngân sách tháng này! </p>
-                        </div>
-                    </a>
-                </div>
-            </li>
             <li class="nav-item dropdown">
                 <a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown">
                     <div class="navbar-profile">

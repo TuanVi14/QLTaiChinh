@@ -8,7 +8,12 @@ namespace QLTaiChinh.Controllers
     public class ProfileController : BaseController
     {
         private readonly QuanLyTaiChinhCaNhanContext _db;
-        public ProfileController(QuanLyTaiChinhCaNhanContext context):base(context) => _db = context;
+        private readonly IWebHostEnvironment _env;
+        public ProfileController(QuanLyTaiChinhCaNhanContext context, IWebHostEnvironment env) : base(context)
+        {
+            _db = context;
+            _env = env;
+        }
 
         private int? UserId() => HttpContext.Session.GetInt32("UserID");
 
@@ -88,57 +93,59 @@ namespace QLTaiChinh.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CapNhatAnh(ProfileViewModel vm)
+        public async Task<IActionResult> CapNhatAnh(IFormFile AnhDaiDienFile)
         {
-            int? userId = HttpContext.Session.GetInt32("UserID");
-            if (userId == null) return RedirectToAction("Login", "Login");
+            int? uid = UserId();
+            if (uid == null) return RedirectToAction("Login", "Login");
 
-            var user = _db.NguoiDungs.Find(userId);
+            var user = await _db.NguoiDungs.FindAsync(uid.Value);
             if (user == null) return NotFound();
 
-            if (vm.AnhDaiDienFile != null && vm.AnhDaiDienFile.Length > 0)
+            if (AnhDaiDienFile != null && AnhDaiDienFile.Length > 0)
             {
-                // Kiểm tra định dạng
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                var ext = Path.GetExtension(vm.AnhDaiDienFile.FileName).ToLower();
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var ext = Path.GetExtension(AnhDaiDienFile.FileName).ToLower();
+
                 if (!allowedExtensions.Contains(ext))
                 {
-                    TempData["Error"] = "Chỉ chấp nhận file ảnh (.jpg, .jpeg, .png, .gif)";
-                    return RedirectToAction("Profile");
+                    TempData["Error"] = "Chỉ chấp nhận file ảnh (.jpg, .jpeg, .png, .gif, .webp)";
+                    return RedirectToAction(nameof(Profile));
                 }
-
-                // Kiểm tra kích thước (tối đa 2MB)
-                if (vm.AnhDaiDienFile.Length > 2 * 1024 * 1024)
+                if (AnhDaiDienFile.Length > 2 * 1024 * 1024)
                 {
                     TempData["Error"] = "Ảnh không được vượt quá 2MB";
-                    return RedirectToAction("Profile");
+                    return RedirectToAction(nameof(Profile));
                 }
 
-                // Xóa ảnh cũ nếu không phải ảnh mặc định
-                if (!string.IsNullOrEmpty(user.AnhDaiDien) && !user.AnhDaiDien.Contains("face15.jpg"))
+                // Xóa ảnh cũ (nếu không phải ảnh mặc định)
+                if (!string.IsNullOrEmpty(user.AnhDaiDien))
                 {
-                    var oldPath = Path.Combine(_env.WebRootPath, user.AnhDaiDien.TrimStart('/'));
+                    var oldPath = Path.Combine(_env.WebRootPath, user.AnhDaiDien.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
                     if (System.IO.File.Exists(oldPath))
                         System.IO.File.Delete(oldPath);
                 }
 
                 // Lưu ảnh mới
-                var fileName = $"avatar_{userId}_{DateTime.Now.Ticks}{ext}";
-                var uploadFolder = Path.Combine(_env.WebRootPath, "images", "avatars");
-                Directory.CreateDirectory(uploadFolder); // tạo thư mục nếu chưa có
+                var fileName = $"avatar_{uid}_{DateTime.Now.Ticks}{ext}";
+                var uploadFolder = Path.Combine(_env.WebRootPath, "Avatar");
+                Directory.CreateDirectory(uploadFolder);
                 var filePath = Path.Combine(uploadFolder, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
-                    await vm.AnhDaiDienFile.CopyToAsync(stream);
+                    await AnhDaiDienFile.CopyToAsync(stream);
 
-                user.AnhDaiDien = $"/images/avatars/{fileName}";
+                user.AnhDaiDien = fileName;
+                user.NgayCapNhat = DateTime.Now;
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = "Cập nhật ảnh đại diện thành công!";
+            }
+            else
+            {
+                TempData["Error"] = "Vui lòng chọn một file ảnh.";
             }
 
-            user.NgayCapNhat = DateTime.Now;
-            await _db.SaveChangesAsync();
-
-            TempData["Success"] = "Cập nhật ảnh đại diện thành công!";
-            return RedirectToAction("Profile");
+            return RedirectToAction(nameof(Profile));
         }
 
         public IActionResult Logout()

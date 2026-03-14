@@ -1,0 +1,103 @@
+﻿@model List<QLTaiChinh.Data.GiaoDich>
+@{
+    ViewData["Title"] = "KetQuaTimKiem";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string tuKhoa = ViewData["TuKhoa"]?.ToString() ?? "";
+    int tongKet = (int)(ViewData["TongKet"] ?? 0);
+}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h4 class="card-title mb-1">
+                            <i class="mdi mdi-magnify mr-2 text-primary"></i>Ket qua tim kiem
+                        </h4>
+                        <p class="text-muted mb-0">
+                            @if (!string.IsNullOrEmpty(tuKhoa))
+                            {
+                                <span>Tu khoa: <strong>"@tuKhoa"</strong> &mdash; </span>
+                            }
+                            Tim thay <strong>@tongKet</strong> giao dich
+                        </p>
+                    </div>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+                        <i class="mdi mdi-arrow-left mr-1"></i> Quay lai
+                    </a>
+                </div>
+
+                <form method="get" action="/GiaoDich/KetQuaTimKiem" class="mb-4">
+                    <div class="input-group" style="max-width:480px;">
+                        <input type="text" name="q" value="@tuKhoa"
+                               class="form-control"
+                               placeholder="Tim theo mo ta hoac danh muc..." />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="mdi mdi-magnify"></i> Tim
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="mdi mdi-file-search-outline" style="font-size:52px;color:#6c7293;"></i>
+                        <p class="text-muted mt-3 mb-1">Khong tim thay giao dich nao phu hop</p>
+                        <p class="text-muted" style="font-size:13px;">Thu tu khoa khac hoac kiem tra ten danh muc</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ngay</th>
+                                    <th>Mo ta</th>
+                                    <th>Danh muc</th>
+                                    <th>Tai khoan</th>
+                                    <th>Loai</th>
+                                    <th class="text-right">So tien</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var gd in Model)
+                                {
+                                    bool isThu = gd.LoaiGiaoDich == "Thu";
+                                    string clr = isThu ? "#00d25b" : "#fc424a";
+                                    <tr>
+                                        <td style="white-space:nowrap;">@gd.NgayGiaoDich.ToString("dd/MM/yyyy")</td>
+                                        <td>@(gd.MoTa ?? gd.GhiChu ?? "(Khong co mo ta)")</td>
+                                        <td>
+                                            <span class="badge badge-secondary">
+                                                @(gd.DanhMuc?.TenDanhMuc ?? "&#8212;")
+                                            </span>
+                                        </td>
+                                        <td>@(gd.TaiKhoan?.TenTaiKhoan ?? "&#8212;")</td>
+                                        <td>
+                                            @if (isThu)
+                                            {
+                                                <span class="badge badge-success">Thu</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Chi</span>
+                                            }
+                                        </td>
+                                        <td class="text-right font-weight-bold" style="color:@clr;white-space:nowrap;">
+                                            @(isThu ? "+" : "-")@gd.SoTien.ToString("N0") &#8363;
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>

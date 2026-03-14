@@ -262,7 +262,19 @@
     @* ── Cột trái: avatar + thống kê ── *@
     <div>
         <div class="profile-card">
-            <div class="avatar">@Model.HoTen.Substring(0, 1).ToUpper()</div>
+            @* Avatar: ưu tiên ảnh thật, fallback chữ cái đầu *@
+            @if (!string.IsNullOrEmpty(Model.AnhDaiDien))
+            {
+                <img src="@(string.IsNullOrEmpty(Model?.AnhDaiDien)
+                             ? "Avatar"
+                             : Url.Content("~/Avatar/" + Model.AnhDaiDien))" alt="Avatar"
+                     style="width:90px;height:90px;border-radius:50%;object-fit:cover;
+                    border:3px solid #0090e7;margin:0 auto 16px;display:block;" />
+            }
+            else
+            {
+                <div class="avatar">@Model.HoTen.Substring(0, 1).ToUpper()</div>
+            }
             <div class="profile-name">@Model.HoTen</div>
             <div class="profile-email">@Model.Email</div>
             <div class="badge-active">● Đang hoạt động</div>
@@ -392,6 +404,53 @@
             </form>
         </div>
 
+        @* Panel: Đổi ảnh đại diện *@
+        <div class="panel">
+            <div class="panel-title">
+                <i class="mdi mdi-camera" style="color:#3fb950"></i>
+                Ảnh đại diện
+            </div>
+
+            <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+                @* Preview ảnh hiện tại *@
+                <div style="flex-shrink:0">
+                    @if (!string.IsNullOrEmpty(Model.AnhDaiDien))
+                    {
+                        <img id="avatarPreview" src="@(string.IsNullOrEmpty(Model?.AnhDaiDien)
+                                                      ? "Avatar"
+                                                      : Url.Content("~/Avatar/" + Model.AnhDaiDien))"
+                             style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #0090e7;" />
+                    }
+                    else
+                    {
+                        <div id="avatarPreview"
+                             style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0090e7,#8b5cf6);
+                                display:flex;align-items:center;justify-content:center;
+                                font-size:1.8rem;font-weight:700;color:#fff">
+                            @Model.HoTen.Substring(0, 1).ToUpper()
+                        </div>
+                    }
+                </div>
+
+                @* Form upload *@
+                <form method="post" action="/Profile/CapNhatAnh"
+                      enctype="multipart/form-data" style="flex:1;min-width:220px">
+                    @Html.AntiForgeryToken()
+                    <div class="form-group">
+                        <label class="form-label">Chọn ảnh mới</label>
+                        <input type="file" name="AnhDaiDienFile" accept="image/*"
+                               class="form-control" onchange="previewAvatar(this)" />
+                        <small style="color:#8b949e;font-size:.74rem;margin-top:4px;display:block">
+                            JPG, PNG, GIF, WEBP — tối đa 2MB
+                        </small>
+                    </div>
+                    <button type="submit" class="btn-save" style="background:#3fb950">
+                        <i class="mdi mdi-upload"></i> Tải lên
+                    </button>
+                </form>
+            </div>
+        </div>
+
         @* Panel 3: Đăng xuất *@
         <div class="panel">
             <div class="panel-title">
@@ -423,6 +482,26 @@
             } else {
                 input.type = 'password';
                 icon.classList.replace('mdi-eye-off','mdi-eye');
+            }
+        }
+
+                function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var preview = document.getElementById('avatarPreview');
+                    // Thay thế div chữ cái bằng thẻ img nếu cần
+                    if (preview.tagName === 'DIV') {
+                        var img = document.createElement('img');
+                        img.id = 'avatarPreview';
+                        img.style.cssText = preview.style.cssText;
+                        img.style.objectFit = 'cover';
+                        preview.parentNode.replaceChild(img, preview);
+                        preview = img;
+                    }
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
             }
         }
     </script>
