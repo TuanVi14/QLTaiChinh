@@ -23,11 +23,10 @@ public partial class QuanLyTaiChinhCaNhanContext : DbContext
 
     public virtual DbSet<NguoiDung> NguoiDungs { get; set; }
 
-    public virtual DbSet<PhienDangNhap> PhienDangNhaps { get; set; }
 
     public virtual DbSet<TaiKhoan> TaiKhoans { get; set; }
 
-    public virtual DbSet<ThongBao> ThongBaos { get; set; }
+
 
     public virtual DbSet<VwGiaoDichChiTiet> VwGiaoDichChiTiets { get; set; }
 
@@ -51,7 +50,6 @@ public partial class QuanLyTaiChinhCaNhanContext : DbContext
             entity.Property(e => e.NgayTao)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.NguoiDungId).HasColumnName("NguoiDungID");
             entity.Property(e => e.TenDanhMuc).HasMaxLength(100);
             entity.Property(e => e.TrangThai).HasDefaultValue(true);
 
@@ -59,10 +57,6 @@ public partial class QuanLyTaiChinhCaNhanContext : DbContext
                 .HasForeignKey(d => d.DanhMucChaId)
                 .HasConstraintName("FK_DanhMuc_DanhMucCha");
 
-            entity.HasOne(d => d.NguoiDung).WithMany(p => p.DanhMucs)
-                .HasForeignKey(d => d.NguoiDungId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("FK_DanhMuc_NguoiDung");
         });
 
         modelBuilder.Entity<GiaoDich>(entity =>
@@ -168,31 +162,7 @@ public partial class QuanLyTaiChinhCaNhanContext : DbContext
             entity.Property(e => e.TrangThai).HasDefaultValue(true);
         });
 
-        modelBuilder.Entity<PhienDangNhap>(entity =>
-        {
-            entity.HasKey(e => e.PhienId).HasName("PK__PhienDan__F12E178BD04CD757");
 
-            entity.ToTable("PhienDangNhap");
-
-            entity.HasIndex(e => e.Token, "UQ__PhienDan__1EB4F817F92A55F1").IsUnique();
-
-            entity.Property(e => e.PhienId).HasColumnName("PhienID");
-            entity.Property(e => e.DiaChiIp)
-                .HasMaxLength(50)
-                .HasColumnName("DiaChiIP");
-            entity.Property(e => e.NgayHetHan).HasColumnType("datetime");
-            entity.Property(e => e.NgayTao)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.NguoiDungId).HasColumnName("NguoiDungID");
-            entity.Property(e => e.ThietBi).HasMaxLength(200);
-            entity.Property(e => e.Token).HasMaxLength(255);
-            entity.Property(e => e.TrangThai).HasDefaultValue(true);
-
-            entity.HasOne(d => d.NguoiDung).WithMany(p => p.PhienDangNhaps)
-                .HasForeignKey(d => d.NguoiDungId)
-                .HasConstraintName("FK_PhienDangNhap_NguoiDung");
-        });
 
         modelBuilder.Entity<TaiKhoan>(entity =>
         {
@@ -218,30 +188,6 @@ public partial class QuanLyTaiChinhCaNhanContext : DbContext
                 .HasConstraintName("FK_TaiKhoan_NguoiDung");
         });
 
-        modelBuilder.Entity<ThongBao>(entity =>
-        {
-            entity.HasKey(e => e.ThongBaoId).HasName("PK__ThongBao__6E51A53B6F7B9105");
-
-            entity.ToTable("ThongBao");
-
-            entity.Property(e => e.ThongBaoId).HasColumnName("ThongBaoID");
-            entity.Property(e => e.LoaiThongBao).HasMaxLength(50);
-            entity.Property(e => e.NganSachId).HasColumnName("NganSachID");
-            entity.Property(e => e.NgayTao)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.NguoiDungId).HasColumnName("NguoiDungID");
-            entity.Property(e => e.NoiDung).HasMaxLength(500);
-            entity.Property(e => e.TieuDe).HasMaxLength(200);
-
-            entity.HasOne(d => d.NganSach).WithMany(p => p.ThongBaos)
-                .HasForeignKey(d => d.NganSachId)
-                .HasConstraintName("FK_ThongBao_NganSach");
-
-            entity.HasOne(d => d.NguoiDung).WithMany(p => p.ThongBaos)
-                .HasForeignKey(d => d.NguoiDungId)
-                .HasConstraintName("FK_ThongBao_NguoiDung");
-        });
 
         modelBuilder.Entity<VwGiaoDichChiTiet>(entity =>
         {

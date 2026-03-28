@@ -33,9 +33,9 @@ public partial class NguoiDung
 
     public virtual ICollection<NganSach> NganSaches { get; set; } = new List<NganSach>();
 
-    public virtual ICollection<PhienDangNhap> PhienDangNhaps { get; set; } = new List<PhienDangNhap>();
+
 
     public virtual ICollection<TaiKhoan> TaiKhoans { get; set; } = new List<TaiKhoan>();
 
-    public virtual ICollection<ThongBao> ThongBaos { get; set; } = new List<ThongBao>();
+
 }

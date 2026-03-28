@@ -27,5 +27,4 @@ public partial class NganSach
 
     public virtual NguoiDung NguoiDung { get; set; } = null!;
 
-    public virtual ICollection<ThongBao> ThongBaos { get; set; } = new List<ThongBao>();
 }

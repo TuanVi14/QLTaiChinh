@@ -7,7 +7,6 @@ public partial class DanhMuc
 {
     public int DanhMucId { get; set; }
 
-    public int? NguoiDungId { get; set; }
 
     public string TenDanhMuc { get; set; } = null!;
 
