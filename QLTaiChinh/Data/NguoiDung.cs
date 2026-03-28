@@ -27,7 +27,6 @@ public partial class NguoiDung
 
     public DateTime NgayCapNhat { get; set; }
 
-    public virtual ICollection<DanhMuc> DanhMucs { get; set; } = new List<DanhMuc>();
 
     public virtual ICollection<GiaoDich> GiaoDiches { get; set; } = new List<GiaoDich>();
 
