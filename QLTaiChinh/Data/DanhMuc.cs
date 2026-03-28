@@ -26,5 +26,4 @@ public partial class DanhMuc
 
     public virtual ICollection<NganSach> NganSaches { get; set; } = new List<NganSach>();
 
-    public virtual NguoiDung? NguoiDung { get; set; }
 }

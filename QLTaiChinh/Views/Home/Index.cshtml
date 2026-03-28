@@ -17,6 +17,22 @@
         .feature-icon { font-size: 2.5rem; color: var(--primary-blue); margin-bottom: 1.5rem; }
         .section-padding { padding: 80px 0; }
         .footer { background: #1d2939; color: white; padding: 40px 0; }
+
+        .alert {
+            display: none;
+        }
+
+            .alert.show {
+                display: block;
+            }
+
+            .alert.success {
+                color: green;
+            }
+
+            .alert.error {
+                color: red;
+            }
     </style>
 </head>
 <body>
@@ -79,26 +95,27 @@
                     <p>Mọi thắc mắc về hệ thống quản lý tài chính cá nhân, vui lòng gửi tin nhắn cho chúng tôi.</p>
                     <ul class="list-unstyled mt-4">
                         <li><i class="fa-solid fa-location-dot text-primary me-2"></i> Trường Đại học Nam Cần Thơ</li>
-                        <li><i class="fa-solid fa-envelope text-primary me-2"></i> hotro@taichinhcanhan.vn</li>
+                        <li><i class="fa-solid fa-envelope text-primary me-2"></i> vitran8605@gmail.com</li>
                         <li><i class="fa-solid fa-user-graduate text-primary me-2"></i> Sinh viên: Phạm Trần Tuấn Vĩ</li>
                     </ul>
                 </div>
                 <div class="col-lg-6">
                     <div class="card p-4 shadow-sm">
-                        <form>
+                        <div id="alertBox" class="alert" style="display:none;"></div>
+                        <form onsubmit="handleSubmit(event)">
                             <div class="mb-3">
                                 <label class="form-label">Họ tên</label>
-                                <input type="text" class="form-control" placeholder="Nhập tên của bạn">
+                                <input type="text" name="from_name" class="form-control" placeholder="Nhập tên của bạn">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Email</label>
-                                <input type="email" class="form-control" placeholder="Email liên hệ">
+                                <input type="email" name="from_email" class="form-control" placeholder="Email liên hệ">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Lời nhắn</label>
-                                <textarea class="form-control" rows="4" placeholder="Chúng tôi có thể giúp gì cho bạn?"></textarea>
+                                <textarea class="form-control" name="message" rows="4" placeholder="Chúng tôi có thể giúp gì cho bạn?"></textarea>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Gửi lời nhắn</button>
+                            <button type="submit" id="submitBtn" class="btn btn-primary w-100">Gửi lời nhắn</button>
                         </form>
                     </div>
                 </div>
