@@ -1,8 +1,10 @@
 ﻿using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QLTaiChinh.Data;
+using System.Text;
 
 namespace QLTaiChinh.Controllers
 {
@@ -16,6 +18,31 @@ namespace QLTaiChinh.Controllers
         }
 
         private int? GetUserId() => HttpContext.Session.GetInt32("UserID");
+
+        private async Task CapNhatNganSach(int nguoiDungId, int danhMucId,
+                                           int thang, int nam)
+        {
+            var nganSach = await _db.NganSaches.FirstOrDefaultAsync(n =>
+                n.NguoiDungId == nguoiDungId &&
+                n.DanhMucId == danhMucId &&
+                n.Thang == thang &&
+                n.Nam == nam);
+
+            if (nganSach == null) return;   // Không có ngân sách → bỏ qua
+
+            // Tính lại tổng chi từ giao dịch thực tế
+            decimal tongChi = await _db.GiaoDiches
+                .Where(g => g.NguoiDungId == nguoiDungId
+                         && g.DanhMucId == danhMucId
+                         && g.LoaiGiaoDich == "Chi"
+                         && g.NgayGiaoDich.Month == thang
+                         && g.NgayGiaoDich.Year == nam)
+                .SumAsync(g => (decimal?)g.SoTien) ?? 0;
+
+            nganSach.SoTienDaChiTieu = tongChi;
+            nganSach.NgayCapNhat = DateTime.Now;
+            await _db.SaveChangesAsync();
+        }
 
         // ── Danh sách giao dịch ──────────────────────────────────────
         public async Task<IActionResult> GiaoDich(int? thang, int? nam, string? loai, string? keyword)
@@ -94,6 +121,16 @@ namespace QLTaiChinh.Controllers
                 return RedirectToAction(nameof(GiaoDich));
             }
 
+            // ── Cập nhật ngân sách nếu là giao dịch Chi ──────────
+            if (model.LoaiGiaoDich == "Chi")
+            {
+                await CapNhatNganSach(
+                    userId.Value,
+                    model.DanhMucId,
+                    model.NgayGiaoDich.Month,
+                    model.NgayGiaoDich.Year);
+            }
+
             await LoadDropdowns(userId.Value, model.TaiKhoanId, model.DanhMucId);
             return View(model);
         }
@@ -130,6 +167,12 @@ namespace QLTaiChinh.Controllers
                     .FirstOrDefaultAsync(g => g.GiaoDichId == id && g.NguoiDungId == userId);
                 if (existing == null) return NotFound();
 
+                // Lưu thông tin CŨ để cập nhật ngân sách cũ (nếu đổi danh mục/tháng)
+                int oldDanhMucId = existing.DanhMucId;
+                int oldThang = existing.NgayGiaoDich.Month;
+                int oldNam = existing.NgayGiaoDich.Year;
+                bool wasChiOld = existing.LoaiGiaoDich == "Chi";
+
                 existing.TaiKhoanId = model.TaiKhoanId;
                 existing.DanhMucId = model.DanhMucId;
                 existing.LoaiGiaoDich = model.LoaiGiaoDich;
@@ -141,11 +184,45 @@ namespace QLTaiChinh.Controllers
                 existing.NgayCapNhat = DateTime.Now;
 
                 await _db.SaveChangesAsync();
+
+                // ── Cập nhật ngân sách cũ (nếu trước đây là Chi) ─────
+                if (wasChiOld)
+                {
+                    await CapNhatNganSach(userId.Value, oldDanhMucId,
+                                          oldThang, oldNam);
+                }
+
+                // ── Cập nhật ngân sách mới (nếu bây giờ là Chi) ──────
+                bool isChiNew = existing.LoaiGiaoDich == "Chi";
+                bool sameKey = oldDanhMucId == existing.DanhMucId &&
+                                oldThang == existing.NgayGiaoDich.Month &&
+                                oldNam == existing.NgayGiaoDich.Year;
+
+                if (isChiNew && !sameKey)
+                {
+                    // Danh mục / tháng đã thay đổi → cần cập nhật ngân sách mới
+                    await CapNhatNganSach(userId.Value, existing.DanhMucId,
+                                          existing.NgayGiaoDich.Month,
+                                          existing.NgayGiaoDich.Year);
+                }
+                else if (isChiNew && sameKey && wasChiOld)
+                {
+                    // Cùng danh mục/tháng, chỉ đổi số tiền → đã cập nhật ở bước cũ rồi
+                    // nhưng bước cũ tính lại từ DB nên đã đúng → không cần làm gì thêm
+                }
+                else if (isChiNew && !wasChiOld)
+                {
+                    // Loại thay đổi từ Thu → Chi → cập nhật ngân sách mới
+                    await CapNhatNganSach(userId.Value, existing.DanhMucId,
+                                          existing.NgayGiaoDich.Month,
+                                          existing.NgayGiaoDich.Year);
+                }
+
                 TempData["Success"] = "Cập nhật giao dịch thành công!";
                 return RedirectToAction(nameof(GiaoDich));
-            }
 
-            await LoadDropdowns(userId.Value, model.TaiKhoanId, model.DanhMucId);
+            }
+        await LoadDropdowns(userId.Value, model.TaiKhoanId, model.DanhMucId);
             return View(model);
         }
 
@@ -161,10 +238,24 @@ namespace QLTaiChinh.Controllers
                 .FirstOrDefaultAsync(g => g.GiaoDichId == id && g.NguoiDungId == userId);
             if (gd != null)
             {
+                // Lưu lại trước khi xóa để cập nhật ngân sách
+                bool isChi = gd.LoaiGiaoDich == "Chi";
+                int danhMucId = gd.DanhMucId;
+                int thang = gd.NgayGiaoDich.Month;
+                int nam = gd.NgayGiaoDich.Year;
+
                 _db.GiaoDiches.Remove(gd);
                 await _db.SaveChangesAsync();
+                // ── Cập nhật ngân sách sau khi xóa ───────────────────
+                if (isChi)
+                {
+                    await CapNhatNganSach(userId.Value, danhMucId, thang, nam);
+                }
                 TempData["Success"] = "Đã xoá giao dịch!";
             }
+
+            
+
             return RedirectToAction(nameof(GiaoDich));
         }
 

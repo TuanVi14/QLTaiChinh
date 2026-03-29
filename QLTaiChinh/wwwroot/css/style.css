@@ -217,17 +217,17 @@
 }
 /*===================================*/
 :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #21262d;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --thu: #3fb950;
-    --chi: #f78166;
-    --acc: #58a6ff;
-    --gold: #d29922;
-    --purple: #bc8cff;
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface2: #f1f3f5;
+    --border: #e0e0e0;
+    --text: #212529;
+    --muted: #6c757d;
+    --thu: #28a745;
+    --chi: #dc3545;
+    --acc: #0d6efd;
+    --gold: #f59f00;
+    --purple: #845ef7;
 }
 
 body {
